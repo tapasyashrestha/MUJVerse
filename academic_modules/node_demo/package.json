@@ -1,0 +1,17 @@
+{
+  "name": "mujverse-node-demo",
+  "version": "1.0.0",
+  "description": "MUJVERSE Academic Demo — Node.js + Express JSON API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test_requests.js"
+  },
+  "dependencies": {
+    "express": "^4.22.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}

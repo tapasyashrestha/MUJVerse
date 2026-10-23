@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd" [
+   <!ENTITY mdash "&#8212;">
+]>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>MUJVERSE &#8212; XHTML 1.0 Strict Academic Demonstration</title>
+  <style type="text/css">
+    /* <![CDATA[ */
+    body {
+      background-color: #0f172a;
+      color: #f8fafc;
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+      padding: 30px;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    .header-box {
+      border-bottom: 2px solid #3b82f6;
+      padding-bottom: 15px;
+      margin-bottom: 25px;
+    }
+    .badge {
+      display: inline-block;
+      background-color: #3b82f6;
+      color: #ffffff;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: bold;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .info-card {
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      padding: 20px;
+      border-radius: 6px;
+      margin-bottom: 25px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid #334155;
+      padding: 10px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #0f172a;
+      color: #93c5fd;
+    }
+    td code {
+      color: #38bdf8;
+      background-color: #0b1120;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    ul, ol {
+      margin-top: 5px;
+      padding-left: 25px;
+    }
+    li {
+      margin-bottom: 6px;
+    }
+    .callout {
+      border-left: 4px solid #10b981;
+      background-color: #064e3b;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-top: 15px;
+      font-size: 13px;
+    }
+    /* ]]> */
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header-box">
+      <span class="badge">Academic Demo #5</span>
+      <h1>XHTML 1.0 Strict &#8212; Well-Formed XML Document Demonstration</h1>
+      <p>
+        An educational document adhering strictly to the W3C XHTML 1.0 Strict DTD rules and XML serialization standards.
+      </p>
+    </div>
+
+    <!-- Comparative Theory Section -->
+    <div class="info-card">
+      <h2>1. Key Differences: XHTML 1.0 Strict vs Modern HTML5</h2>
+      <p>
+        XHTML (Extensible HyperText Markup Language) was formulated by the W3C in 2000 as an application of XML 1.0. Unlike modern HTML5 (which uses forgiving HTML parser rules), XHTML enforces strict XML well-formedness:
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Syntax Rule</th>
+            <th>XHTML 1.0 Strict (XML Rules)</th>
+            <th>Modern HTML5 (Living Standard)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Element Casing</strong></td>
+            <td>Strictly lowercase (e.g. <code>&lt;div&gt;</code>, not <code>&lt;DIV&gt;</code>)</td>
+            <td>Case-insensitive (though lowercase is convention)</td>
+          </tr>
+          <tr>
+            <td><strong>Tag Closing</strong></td>
+            <td>Every non-void tag <strong>must</strong> have a closing tag; void tags must self-close: <code>&lt;br /&gt;</code>, <code>&lt;hr /&gt;</code>, <code>&lt;img /&gt;</code></td>
+            <td>Void tags do not require self-closing slashes (<code>&lt;br&gt;</code> is standard)</td>
+          </tr>
+          <tr>
+            <td><strong>Attribute Quoting</strong></td>
+            <td>Every attribute value must be quoted: <code>checked="checked"</code></td>
+            <td>Quotes are optional for single-word values; boolean attributes are minimized: <code>checked</code></td>
+          </tr>
+          <tr>
+            <td><strong>Attribute Minimization</strong></td>
+            <td>Strictly forbidden: <code>selected="selected"</code>, <code>disabled="disabled"</code></td>
+            <td>Allowed and preferred: <code>selected</code>, <code>disabled</code></td>
+          </tr>
+          <tr>
+            <td><strong>Script &amp; Style Blocks</strong></td>
+            <td>Must be wrapped in XML <code>&lt;![CDATA[ ... ]]&gt;</code> blocks if containing <code>&amp;</code> or <code>&lt;</code></td>
+            <td>Raw text elements parsed without XML escaping requirements</td>
+          </tr>
+          <tr>
+            <td><strong>Error Handling</strong></td>
+            <td>Draconian error handling: any syntax violation halts XML parser completely</td>
+            <td>Forgiving error handling: browser parsing algorithm corrects mistakes</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Live Event Schedule Table in Strict XHTML -->
+    <div class="info-card">
+      <h2>2. MUJVERSE Campus Events (Strict XHTML Sample Data)</h2>
+      <p>
+        The table below is written with full strict syntax: all attributes quoted, all cells explicitly closed, and special characters encoded as entities (e.g. <code>&amp;amp;</code>).
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Event Name &amp; Category</th>
+            <th>Venue</th>
+            <th>Capacity</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><strong>MUJ Hackathon 2026</strong> &#8212; Technical</td>
+            <td>Innovation Lab, Block A</td>
+            <td>200</td>
+            <td>Open</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><strong>Symphony Night</strong> &#8212; Cultural &amp; Arts</td>
+            <td>Open Air Amphitheatre</td>
+            <td>500</td>
+            <td>Open</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td><strong>Inter-Department Football</strong> &#8212; Sports</td>
+            <td>Main Sports Ground</td>
+            <td>160</td>
+            <td>Full</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <strong>Validation Rule Note:</strong> In strict XHTML, the <code>&amp;</code> character inside any attribute or text node must always be escaped as <code>&amp;amp;</code>, or the XML parser will fail validation immediately.
+      </div>
+    </div>
+
+    <!-- Verification Section -->
+    <div class="info-card">
+      <h2>3. How to Validate this XHTML Document</h2>
+      <ol>
+        <li>
+          <strong>Python XML Parser Verification:</strong>
+          Run Python's built-in <code>xml.etree.ElementTree</code> against this file:
+          <br />
+          <code>python -c "import xml.etree.ElementTree as ET; ET.parse('academic_modules/xhtml_demo/index.xhtml'); print('Valid XML!')"</code>
+        </li>
+        <li>
+          <strong>W3C Nu HTML/XHTML Validator:</strong>
+          Upload this document to <a href="https://validator.w3.org/" style="color: #60a5fa;">https://validator.w3.org/</a> or validate via command line XML linters (e.g., <code>xmllint --noout --valid index.xhtml</code>).
+        </li>
+      </ol>
+    </div>
+  </div>
+</body>
+</html>

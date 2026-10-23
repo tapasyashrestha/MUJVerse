@@ -17,22 +17,29 @@ def notifications_list_view(request):
 
 
 @login_required
+def unread_count_api(request):
+    """JSON API endpoint returning unread notification count for the current user."""
+    count = Notification.objects.filter(recipient=request.user, is_read=False).count()
+    return JsonResponse({"unread_count": count})
+
+
+@login_required
 @require_POST
 def mark_notification_read_view(request, pk):
-    """Mark a single notification as read (JSON/AJAX or form POST)."""
+    """Mark a single notification as read (JSON/Fetch or form POST)."""
     notification = get_object_or_404(Notification, pk=pk, recipient=request.user)
     notification.is_read = True
     notification.save(update_fields=["is_read"])
-    if request.headers.get("x-requested-with") == "XMLHttpRequest":
-        return JsonResponse({"success": True, "message": "Notification marked as read."})
+    if request.headers.get("x-requested-with") == "XMLHttpRequest" or request.headers.get("accept", "").find("application/json") != -1 or request.content_type == "application/json":
+        return JsonResponse({"success": True, "message": "Notification marked as read.", "id": pk})
     return redirect("notifications:list")
 
 
 @login_required
 @require_POST
 def mark_all_read_view(request):
-    """Mark all unread notifications as read."""
-    Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
-    if request.headers.get("x-requested-with") == "XMLHttpRequest":
-        return JsonResponse({"success": True, "message": "All notifications marked as read."})
+    """Mark all unread notifications as read (JSON/Fetch or form POST)."""
+    updated_count = Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
+    if request.headers.get("x-requested-with") == "XMLHttpRequest" or request.headers.get("accept", "").find("application/json") != -1 or request.content_type == "application/json":
+        return JsonResponse({"success": True, "message": "All notifications marked as read.", "updated": updated_count})
     return redirect("notifications:list")

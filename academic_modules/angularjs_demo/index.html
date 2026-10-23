@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MUJVERSE — AngularJS 1.x Academic Demo</title>
+
+  <!-- Bootstrap 5 for minimal styling -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+  />
+
+  <!--
+    AngularJS 1.8.3 (Legacy 1.x — for academic demonstration only)
+    NOTE: AngularJS 1.x reached End-of-Life on 31 December 2021.
+    It is presented here purely as a historical/academic example.
+    Modern Angular (2+) is a completely different framework.
+    The production MUJVERSE frontend uses vanilla JS + Bootstrap 5.
+  -->
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+
+  <style>
+    body { background: #0c1022; color: #e2e8f0; font-family: 'Inter', sans-serif; }
+    .card { background: #131936; border: 1px solid #1e2a4a; border-radius: 12px; }
+    .badge-cat { background: #7c3aed; color: #fff; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; }
+    .search-bar { background: #1e2a4a; border: 1px solid #2d3a5e; color: #e2e8f0; }
+    .search-bar:focus { background: #1e2a4a; border-color: #7c3aed; color: #e2e8f0; box-shadow: none; }
+    .search-bar::placeholder { color: #64748b; }
+    .stat-box { background: #1e2a4a; border-radius: 8px; padding: 12px 20px; text-align: center; }
+    .stat-box h3 { color: #7c3aed; font-size: 2rem; margin: 0; }
+    .highlight { color: #06b6d4; }
+    .full-badge { background: #ef4444; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; }
+    .avail-badge { background: #22c55e; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; }
+    select.search-bar option { background: #131936; }
+    .explanation-box { background: #1e1060; border: 1px solid #4c1d95; border-radius: 8px; }
+    code { background: #0f172a; padding: 2px 6px; border-radius: 4px; color: #22d3ee; }
+  </style>
+</head>
+
+<!--
+  ng-app="mujverseApp"  — declares the AngularJS module boundary
+  ng-controller="EventsController as vm"  — attaches the controller
+-->
+<body ng-app="mujverseApp" ng-controller="EventsController as vm">
+
+  <div class="container py-5">
+
+    <!-- Header -->
+    <div class="text-center mb-5">
+      <h1 class="fw-bold" style="color:#7c3aed;">MUJVERSE</h1>
+      <p class="text-muted">AngularJS 1.x Academic Demo — Module, Controller, Data Binding, ng-repeat, ng-model</p>
+    </div>
+
+    <!-- AngularJS Concept Explainer -->
+    <div class="explanation-box p-4 mb-4">
+      <h5 class="text-warning mb-3">📚 AngularJS Concepts Demonstrated on This Page</h5>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <p><code>ng-app="mujverseApp"</code> — declares the <strong>module</strong> boundary on the <code>&lt;body&gt;</code> element.</p>
+          <p><code>ng-controller="EventsController as vm"</code> — attaches the <strong>controller</strong>; <code>vm</code> is the controller alias (controllerAs syntax).</p>
+          <p><code>ng-model="vm.searchText"</code> — <strong>two-way data binding</strong>: the input is tied to the controller's <code>searchText</code> property.</p>
+        </div>
+        <div class="col-md-6">
+          <p><code>ng-repeat="event in vm.filteredEvents()"</code> — <strong>repeats DOM elements</strong> for each item in the filtered array.</p>
+          <p><code>{{ vm.searchText }}</code> — <strong>expression interpolation</strong> renders controller data into the template.</p>
+          <p><code>ng-if</code> / <code>ng-show</code> — <strong>conditional rendering</strong> based on scope state.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live stats — two-way binding showcase -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="stat-box">
+          <h3>{{ vm.totalEvents }}</h3>
+          <small class="text-muted">Total Events</small>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-box">
+          <h3 class="text-success">{{ vm.filteredEvents().length }}</h3>
+          <small class="text-muted">Showing (filtered)</small>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-box">
+          <h3 style="color:#06b6d4">{{ vm.availableCount() }}</h3>
+          <small class="text-muted">Seats Available</small>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-box">
+          <h3 style="color:#f59e0b">{{ vm.searchText.length }}</h3>
+          <small class="text-muted">Search Chars (live)</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search & filter controls — ng-model two-way binding -->
+    <div class="card p-4 mb-4">
+      <h6 class="text-muted mb-3">🔍 Filters — powered by <code>ng-model</code> two-way binding</h6>
+      <div class="row g-3">
+        <div class="col-md-5">
+          <label class="form-label text-muted small">Search events</label>
+          <!--
+            ng-model="vm.searchText"
+            Every keystroke updates vm.searchText in the controller scope,
+            which immediately re-evaluates vm.filteredEvents() via ng-repeat.
+          -->
+          <input
+            type="text"
+            class="form-control search-bar"
+            placeholder="Type to search by title or description…"
+            ng-model="vm.searchText"
+          />
+          <small class="text-muted">You typed: <span class="highlight">{{ vm.searchText || '(nothing yet)' }}</span></small>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label text-muted small">Category</label>
+          <select class="form-select search-bar" ng-model="vm.selectedCategory">
+            <option value="">All Categories</option>
+            <option ng-repeat="cat in vm.categories" value="{{ cat }}">{{ cat }}</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label text-muted small">Availability</label>
+          <select class="form-select search-bar" ng-model="vm.showAvailableOnly">
+            <option value="false">All Events</option>
+            <option value="true">Available Only</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Event cards — ng-repeat -->
+    <!--
+      ng-repeat iterates over vm.filteredEvents() array.
+      Each iteration creates a new scope with `event` as the local variable.
+      Angular automatically watches the array for changes and re-renders.
+    -->
+    <div ng-if="vm.filteredEvents().length > 0">
+      <div class="row g-3">
+        <div class="col-md-6" ng-repeat="event in vm.filteredEvents() track by event.id">
+          <div class="card p-3 h-100">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="badge-cat">{{ event.category }}</span>
+              <span ng-if="event.registered >= event.capacity" class="full-badge">FULL</span>
+              <span ng-if="event.registered < event.capacity" class="avail-badge">
+                {{ event.capacity - event.registered }} seats left
+              </span>
+            </div>
+            <h6 class="fw-bold mt-2">{{ event.title }}</h6>
+            <p class="text-muted small mb-1">📍 {{ event.venue }}</p>
+            <p class="text-muted small mb-2">🗓 {{ event.start_datetime | date:'d MMM y, h:mm a' }}</p>
+            <p class="small" style="color:#94a3b8">{{ event.description | limitTo:120 }}…</p>
+            <div class="mt-auto d-flex justify-content-between align-items-center pt-2">
+              <small class="text-muted">👤 {{ event.organizer }}</small>
+              <!-- Capacity bar -->
+              <div style="width:120px;">
+                <div class="progress" style="height:6px; background:#1e2a4a;">
+                  <div
+                    class="progress-bar"
+                    role="progressbar"
+                    ng-style="{'width': (event.registered / event.capacity * 100) + '%',
+                               'background': event.registered >= event.capacity ? '#ef4444' : '#7c3aed'}"
+                  ></div>
+                </div>
+                <small class="text-muted" style="font-size:0.65rem;">
+                  {{ event.registered }}/{{ event.capacity }} registered
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state — ng-if conditional rendering -->
+    <div ng-if="vm.filteredEvents().length === 0" class="text-center py-5">
+      <p class="text-muted fs-4">🔍 No events match your filters.</p>
+      <button class="btn btn-outline-light btn-sm mt-2" ng-click="vm.clearFilters()">Clear Filters</button>
+    </div>
+
+    <!-- Raw binding showcase -->
+    <div class="card p-4 mt-4">
+      <h6 class="text-warning mb-3">🔗 Live Binding Debug Panel (AngularJS $scope values)</h6>
+      <div class="row g-2 small">
+        <div class="col-md-4">
+          <code>vm.searchText</code> = <span class="highlight">"{{ vm.searchText }}"</span>
+        </div>
+        <div class="col-md-4">
+          <code>vm.selectedCategory</code> = <span class="highlight">"{{ vm.selectedCategory }}"</span>
+        </div>
+        <div class="col-md-4">
+          <code>vm.showAvailableOnly</code> = <span class="highlight">"{{ vm.showAvailableOnly }}"</span>
+        </div>
+      </div>
+    </div>
+
+    <footer class="text-center mt-5 text-muted small">
+      <p>⚠️ <strong>Educational Demo Only.</strong> AngularJS 1.x reached End-of-Life on 31 December 2021.
+      This demo is for academic comparison; the production MUJVERSE frontend uses vanilla JS.</p>
+    </footer>
+
+  </div><!-- /container -->
+
+  <script>
+    /**
+     * MUJVERSE AngularJS 1.x Academic Demo
+     * ======================================
+     * Demonstrates: angular.module(), controller, $scope, two-way binding,
+     * ng-model, ng-repeat, ng-if, ng-click, ng-style, filters (date, limitTo).
+     */
+
+    // 1. Define the AngularJS MODULE
+    //    angular.module(name, [dependencies])
+    //    The empty array [] means no external dependencies.
+    var app = angular.module("mujverseApp", []);
+
+    // 2. Register a CONTROLLER on the module
+    //    The controller function receives DI-injected services as parameters.
+    //    Here we only need $scope (the two-way binding context).
+    app.controller("EventsController", ["$scope", function ($scope) {
+
+      // `this` = the controller instance (used with controllerAs "vm" syntax)
+      var vm = this;
+
+      // ── Sample data (mirrors Node.js demo — no live HTTP call needed) ─────
+      vm.events = [
+        {
+          id: 1, title: "MUJ Hackathon 2026", category: "Technical",
+          venue: "Innovation Lab, Block A",
+          start_datetime: "2026-11-15T09:00:00+05:30",
+          capacity: 200, registered: 147,
+          organizer: "Tech Club MUJ",
+          description: "24-hour hackathon open to all students. Build innovative solutions for real-world campus problems. Prizes worth ₹1,00,000."
+        },
+        {
+          id: 2, title: "Symphony Night", category: "Cultural & Arts",
+          venue: "Open Air Amphitheatre",
+          start_datetime: "2026-11-20T18:30:00+05:30",
+          capacity: 500, registered: 312,
+          organizer: "Crescendo — MUJ Music Society",
+          description: "Annual inter-college band competition with performances from 12 bands across Rajasthan."
+        },
+        {
+          id: 3, title: "Inter-College Cricket League", category: "Sports",
+          venue: "Main Cricket Ground",
+          start_datetime: "2026-12-01T08:00:00+05:30",
+          capacity: 300, registered: 300,
+          organizer: "Sports Council MUJ",
+          description: "5-day T20 cricket tournament. Teams of 11 players. Registration closed — capacity reached."
+        },
+        {
+          id: 4, title: "AI/ML Workshop", category: "Workshop",
+          venue: "Computer Science Lab 3, Block C",
+          start_datetime: "2026-11-28T10:00:00+05:30",
+          capacity: 60, registered: 41,
+          organizer: "IEEE MUJ Student Chapter",
+          description: "Hands-on workshop covering Python, scikit-learn, and neural networks. Bring your laptop."
+        },
+        {
+          id: 5, title: "E-Summit 2026", category: "E-Summit",
+          venue: "Seminar Hall, Admin Block",
+          start_datetime: "2026-12-10T09:00:00+05:30",
+          capacity: 400, registered: 88,
+          organizer: "E-Cell MUJ",
+          description: "Annual entrepreneurship summit with keynote speakers, startup pitches, and investor panels."
+        },
+      ];
+
+      // ── Derived data ────────────────────────────────────────────────────────
+      vm.totalEvents = vm.events.length;
+
+      // Unique categories (for the dropdown)
+      vm.categories = vm.events
+        .map(function (e) { return e.category; })
+        .filter(function (c, i, arr) { return arr.indexOf(c) === i; });
+
+      // ── Filter model properties (bound via ng-model) ────────────────────────
+      vm.searchText = "";
+      vm.selectedCategory = "";
+      vm.showAvailableOnly = "false";
+
+      // ── Filtered results (called from ng-repeat) ───────────────────────────
+      // AngularJS watches this function's return value on every digest cycle.
+      vm.filteredEvents = function () {
+        return vm.events.filter(function (event) {
+          // Text search
+          var q = (vm.searchText || "").toLowerCase();
+          var matchesText =
+            !q ||
+            event.title.toLowerCase().indexOf(q) !== -1 ||
+            event.description.toLowerCase().indexOf(q) !== -1;
+
+          // Category filter
+          var matchesCat =
+            !vm.selectedCategory ||
+            event.category === vm.selectedCategory;
+
+          // Availability filter (ng-model returns strings from <select>)
+          var matchesAvail =
+            vm.showAvailableOnly !== "true" ||
+            event.registered < event.capacity;
+
+          return matchesText && matchesCat && matchesAvail;
+        });
+      };
+
+      // ── Computed stat ──────────────────────────────────────────────────────
+      vm.availableCount = function () {
+        return vm.events.filter(function (e) {
+          return e.registered < e.capacity;
+        }).length;
+      };
+
+      // ── Action: clear all filters ──────────────────────────────────────────
+      // ng-click="vm.clearFilters()" calls this from the template
+      vm.clearFilters = function () {
+        vm.searchText = "";
+        vm.selectedCategory = "";
+        vm.showAvailableOnly = "false";
+      };
+
+    }]);
+  </script>
+</body>
+</html>

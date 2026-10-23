@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "title": "MUJ Hackathon 2026",
+    "category": "Technical",
+    "venue": "Innovation Lab, Block A",
+    "start_datetime": "2026-11-15T09:00:00+05:30",
+    "capacity": 200,
+    "registered": 147,
+    "status": "approved",
+    "organizer": "Tech Club MUJ",
+    "description": "24-hour hackathon open to all students. Build innovative campus solutions. Prizes worth ₹1,00,000."
+  },
+  {
+    "id": 2,
+    "title": "Symphony Night",
+    "category": "Cultural & Arts",
+    "venue": "Open Air Amphitheatre",
+    "start_datetime": "2026-11-20T18:30:00+05:30",
+    "capacity": 500,
+    "registered": 312,
+    "status": "approved",
+    "organizer": "Music Society",
+    "description": "Annual campus musical extravaganza featuring solo acts, indie bands, and student ensembles."
+  },
+  {
+    "id": 3,
+    "title": "Inter-Department Football Tournament",
+    "category": "Sports",
+    "venue": "Main Sports Ground",
+    "start_datetime": "2026-11-22T08:00:00+05:30",
+    "capacity": 160,
+    "registered": 160,
+    "status": "approved",
+    "organizer": "Sports Council",
+    "description": "16 departmental teams battle for the MUJ Champions Trophy."
+  },
+  {
+    "id": 4,
+    "title": "Introduction to Generative AI & LLMs",
+    "category": "Workshop",
+    "venue": "Seminar Hall 2, Block B",
+    "start_datetime": "2026-11-28T14:00:00+05:30",
+    "capacity": 80,
+    "registered": 45,
+    "status": "approved",
+    "organizer": "ACM Student Chapter",
+    "description": "Hands-on workshop exploring prompt engineering, embeddings, and RAG architectures."
+  },
+  {
+    "id": 5,
+    "title": "MUJ E-Summit: Startup Conclave",
+    "category": "E-Summit",
+    "venue": "Auditorium 1",
+    "start_datetime": "2026-12-05T10:00:00+05:30",
+    "capacity": 350,
+    "registered": 210,
+    "status": "approved",
+    "organizer": "E-Cell MUJ",
+    "description": "Pitch your ideas to Angel Investors and listen to top startup founders."
+  }
+]

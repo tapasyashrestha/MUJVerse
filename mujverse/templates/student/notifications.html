@@ -47,7 +47,7 @@
 
         <div>
           {% if not notif.is_read %}
-            <form action="{% url 'notifications:mark_read' pk=notif.pk %}" method="post">
+            <form action="{% url 'notifications:mark_read' pk=notif.pk %}" method="post" class="mark-read-form" data-pk="{{ notif.pk }}">
               {% csrf_token %}
               <button type="submit" class="btn btn-sm btn-mv-outline text-info" title="Mark as read">
                 <i class="bi bi-check2"></i> Mark Read
@@ -67,4 +67,56 @@
     {% endfor %}
   </div>
 </div>
+
+<script>
+  // Progressive enhancement via Fetch API demonstrating CSRF header and JSON response handling
+  document.addEventListener("DOMContentLoaded", () => {
+    const getCsrfToken = () => {
+      const input = document.querySelector('input[name="csrfmiddlewaretoken"]');
+      return input ? input.value : "";
+    };
+
+    document.querySelectorAll(".mark-read-form").forEach(form => {
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const actionUrl = form.getAttribute("action");
+        const token = getCsrfToken();
+        const button = form.querySelector("button");
+
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+        try {
+          const response = await fetch(actionUrl, {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": token,
+              "Accept": "application/json",
+              "X-Requested-With": "XMLHttpRequest"
+            }
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            // Dynamically replace form with 'Read' badge
+            const parent = form.parentElement;
+            parent.innerHTML = '<span class="text-dim small"><i class="bi bi-check2-all"></i> Read</span>';
+
+            // Also remove border-info and New badge
+            const containerCard = parent.closest(".border-start");
+            if (containerCard) {
+              containerCard.classList.remove("border-start", "border-4", "border-info");
+              const badge = containerCard.querySelector(".badge.bg-primary");
+              if (badge) badge.remove();
+            }
+          } else {
+            form.submit(); // fallback to normal form post
+          }
+        } catch (err) {
+          form.submit(); // fallback to normal form post
+        }
+      });
+    });
+  });
+</script>
 {% endblock %}
