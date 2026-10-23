@@ -60,6 +60,7 @@ class AccountsFormTests(TestCase):
         # Verify that elevated privileges were completely rejected
         self.assertFalse(user.is_staff)
         self.assertFalse(user.is_superuser)
+        user.profile.refresh_from_db()
         self.assertEqual(user.profile.role, RoleChoices.STUDENT)
         self.assertEqual(user.profile.student_identifier, "229301001")
         self.assertEqual(user.profile.department, "Computer Science & Engineering")

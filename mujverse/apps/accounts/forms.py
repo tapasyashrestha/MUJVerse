@@ -88,6 +88,7 @@ class StudentRegistrationForm(forms.ModelForm):
             profile.student_identifier = self.cleaned_data.get("student_identifier")
             profile.department = self.cleaned_data.get("department")
             profile.save()
+            user.profile = profile
         return user
 
 
