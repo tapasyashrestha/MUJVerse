@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Student Registration — MUJVERSE{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7 col-md-9">
+      <div class="mv-card p-4 p-md-5">
+        <div class="text-center mb-4">
+          <div class="d-inline-flex p-3 rounded-circle mb-3" style="background: rgba(124, 58, 237, 0.15); border: 1px solid var(--mv-border-violet);">
+            <i class="bi bi-mortarboard-fill fs-2 text-info"></i>
+          </div>
+          <h2 class="h3 fw-bold">Join MUJVERSE</h2>
+          <p class="text-muted small">
+            Create your student account to discover events, register for free, and get unique QR tickets.
+          </p>
+        </div>
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+              {{ form.first_name }}
+              {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+              {{ form.last_name }}
+              {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+            {{ form.username }}
+            {% if form.username.errors %}<div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>{% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label for="{{ form.email.id_for_label }}" class="form-label">University Email</label>
+            {{ form.email }}
+            <div class="form-text text-dim">Please use your official MUJ email address.</div>
+            {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label for="{{ form.student_identifier.id_for_label }}" class="form-label">Registration / Student ID</label>
+              {{ form.student_identifier }}
+              <div class="form-text text-dim">e.g. 229301234</div>
+              {% if form.student_identifier.errors %}<div class="text-danger small mt-1">{{ form.student_identifier.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label for="{{ form.department.id_for_label }}" class="form-label">Department / School</label>
+              {{ form.department }}
+              <div class="form-text text-dim">e.g. CSE, IT, Architecture</div>
+              {% if form.department.errors %}<div class="text-danger small mt-1">{{ form.department.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
+              {{ form.password }}
+              <div class="form-text text-dim">Min. 8 characters.</div>
+              {% if form.password.errors %}<div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label for="{{ form.confirm_password.id_for_label }}" class="form-label">Confirm Password</label>
+              {{ form.confirm_password }}
+              {% if form.confirm_password.errors %}<div class="text-danger small mt-1">{{ form.confirm_password.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="d-grid mb-3">
+            <button type="submit" class="btn btn-mv-primary btn-lg">
+              <i class="bi bi-person-check-fill me-2"></i> Create Student Account
+            </button>
+          </div>
+
+          <div class="text-center small text-muted">
+            Already have an account? <a href="{% url 'accounts:login' %}" class="fw-semibold">Log in here</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

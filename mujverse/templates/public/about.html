@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}About MUJVERSE — Campus Events Platform{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-9">
+      <div class="mv-card p-4 p-md-5 mb-5">
+        <div class="d-inline-flex p-3 rounded-circle mb-3" style="background: rgba(124, 58, 237, 0.15); border: 1px solid var(--mv-border-violet);">
+          <i class="bi bi-info-circle-fill fs-2 text-info"></i>
+        </div>
+        <h1 class="h2 fw-bold mb-3">About MUJVERSE</h1>
+        <p class="lead text-muted mb-4">
+          MUJVERSE is the unified digital platform for events, experiences, and ticketing at Manipal University Jaipur (MUJ).
+        </p>
+
+        <h4 class="h5 fw-bold text-white mb-2">Our Vision</h4>
+        <p class="text-body mb-4">
+          Campus life at MUJ is vibrant, diverse, and relentless. From technical hackathons organized by IEEE and ACM, to cultural festivals like Oneiros, sports tournaments, and student club workshops, hundreds of events happen every semester. MUJVERSE replaces scattered forms and posters with a centralized, accessible portal.
+        </p>
+
+        <h4 class="h5 fw-bold text-white mb-2">Key Highlights</h4>
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--mv-border);">
+              <i class="bi bi-gift-fill text-success fs-4 mb-2 d-block"></i>
+              <h6 class="fw-bold text-white">100% Free Registrations</h6>
+              <p class="small text-muted mb-0">No payment gateways or fees. All campus events are free for verified students.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--mv-border);">
+              <i class="bi bi-qr-code text-info fs-4 mb-2 d-block"></i>
+              <h6 class="fw-bold text-white">QR Code Ticketing</h6>
+              <p class="small text-muted mb-0">Instant cryptographic tickets scanned at venue entrances for seamless check-in.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--mv-border);">
+              <i class="bi bi-shield-lock-fill text-primary fs-4 mb-2 d-block"></i>
+              <h6 class="fw-bold text-white">Role-Based Security</h6>
+              <p class="small text-muted mb-0">Enforced permissions for Students, Verified Organizers, and Administrators.</p>
+            </div>
+          </div>
+        </div>
+
+        <h4 class="h5 fw-bold text-white mb-2">Web Technology Project Stack</h4>
+        <p class="text-body mb-2">
+          This system demonstrates modern web engineering concepts required by the curriculum:
+        </p>
+        <ul class="text-muted small">
+          <li><strong>Backend:</strong> Python 3.14 &bull; Django 5.2 LTS MVT Architecture</li>
+          <li><strong>Database:</strong> MySQL 8 Relational Database with Transactional Integrity</li>
+          <li><strong>Frontend:</strong> HTML5, CSS3, Bootstrap 5.3, Vanilla JavaScript, Fetch API</li>
+          <li><strong>Security:</strong> Session authentication, CSRF validation, server-side authorization checks</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

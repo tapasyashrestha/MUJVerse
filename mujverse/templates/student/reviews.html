@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}My Reviews — MUJVERSE{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="mb-4">
+    <h1 class="h2 fw-bold mb-1">My Event Reviews</h1>
+    <p class="text-muted small mb-0">Feedback and ratings you've submitted for past campus events.</p>
+  </div>
+
+  <div class="mv-card p-4">
+    {% for review in reviews %}
+      <div class="p-3 mb-3 rounded-3" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--mv-border);">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 class="fw-bold text-white mb-0">{{ review.event.title }}</h5>
+          <div class="text-warning">
+            {% for _ in "x"|rjust:review.rating %}<i class="bi bi-star-fill"></i>{% endfor %}
+          </div>
+        </div>
+        <p class="small text-muted mb-2">{{ review.comment }}</p>
+        <span class="text-dim small">Reviewed on {{ review.created_at|date:"M d, Y" }}</span>
+      </div>
+    {% empty %}
+      <div class="text-center text-muted py-5">
+        <i class="bi bi-chat-square-quote fs-1 text-dim mb-3 d-block"></i>
+        <h5>No Reviews Submitted Yet</h5>
+        <p class="small text-muted">You can leave reviews for events you've attended once they conclude.</p>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

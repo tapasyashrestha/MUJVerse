@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Check-in Scanner — {{ event.title }} — MUJVERSE{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+      <div class="mb-3">
+        <a href="{% url 'organizer:dashboard' %}" class="small text-muted">&larr; Back to Organizer Dashboard</a>
+      </div>
+
+      <div class="mv-card p-4 p-md-5">
+        <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom" style="border-color: var(--mv-border) !important;">
+          <div>
+            <span class="badge badge-role-organizer mb-1">Check-in Terminal</span>
+            <h3 class="h5 fw-bold text-white mb-0">{{ event.title }}</h3>
+          </div>
+          <div class="text-end">
+            <span class="small text-muted d-block">Checked in</span>
+            <span class="fw-bold text-info">{{ event.attendance_count }} / {{ event.confirmed_registrations_count }}</span>
+          </div>
+        </div>
+
+        <!-- Camera Scanner Simulation / Preview Container -->
+        <div class="p-4 rounded-4 text-center mb-4" style="background: rgba(0, 0, 0, 0.5); border: 2px dashed var(--mv-border-violet);">
+          <div class="py-4">
+            <i class="bi bi-camera-video fs-1 text-info mb-2 d-block"></i>
+            <h6 class="text-white">Camera Check-in Scanner</h6>
+            <p class="small text-muted mb-3">Live camera barcode scanner activates here over HTTPS in Phase 5.</p>
+          </div>
+        </div>
+
+        <!-- Manual Token Entry Fallback -->
+        <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--mv-border);">
+          <label class="form-label small fw-bold">Manual Token Entry Fallback</label>
+          <div class="input-group">
+            <input type="text" id="manualTokenInput" class="form-control font-monospace" placeholder="Enter 32-character ticket token...">
+            <button class="btn btn-mv-cyan" type="button" id="verifyTokenBtn">Verify</button>
+          </div>
+          <div class="form-text text-dim">Use this if the student's phone screen cannot be scanned.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

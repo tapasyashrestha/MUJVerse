@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}User Management — MUJVERSE Admin{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <a href="{% url 'platform_admin:dashboard' %}" class="small text-muted">&larr; Admin Dashboard</a>
+      <h1 class="h2 fw-bold mb-0 mt-1">User Directory</h1>
+    </div>
+    <a href="/admin/auth/user/" target="_blank" class="btn btn-sm btn-outline-warning">
+      <i class="bi bi-person-gear me-1"></i> Manage in Django Admin
+    </a>
+  </div>
+
+  <div class="mv-card p-4">
+    <div class="table-responsive">
+      <table class="table table-dark table-hover mb-0 align-middle">
+        <thead>
+          <tr class="text-muted small">
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Student ID</th>
+            <th>Department</th>
+            <th>Joined</th>
+            <th>Staff?</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users_list %}
+            <tr>
+              <td class="fw-bold text-white">{{ u.username }}</td>
+              <td class="small text-muted">{{ u.email }}</td>
+              <td>
+                {% if u.profile.role == 'admin' or u.is_superuser %}
+                  <span class="badge badge-role-admin">Admin</span>
+                {% elif u.profile.role == 'organizer' %}
+                  <span class="badge badge-role-organizer">Organizer</span>
+                {% else %}
+                  <span class="badge badge-role-student">Student</span>
+                {% endif %}
+              </td>
+              <td class="small font-monospace">{{ u.profile.student_identifier|default:"-" }}</td>
+              <td class="small text-dim">{{ u.profile.department|default:"-" }}</td>
+              <td class="small text-dim">{{ u.date_joined|date:"M d, Y" }}</td>
+              <td>
+                {% if u.is_staff %}<i class="bi bi-check-circle-fill text-success"></i>{% else %}<i class="bi bi-dash text-muted"></i>{% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

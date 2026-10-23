@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Explore Campus Events — MUJVERSE{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="mb-4">
+    <h1 class="h2 fw-bold mb-1">Explore Campus Events</h1>
+    <p class="text-muted">Find workshops, hackathons, sports matches, and cultural fests happening at MUJ.</p>
+  </div>
+
+  <!-- Filter & Search Controls -->
+  <div class="mv-card p-4 mb-4">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-lg-4 col-md-6">
+        <label class="form-label">Search Query</label>
+        <div class="input-group">
+          <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
+          <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search by title or venue...">
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-6">
+        <label class="form-label">Category</label>
+        <select name="category" class="form-select">
+          <option value="">All Categories</option>
+          {% for cat in categories %}
+            <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-lg-2 col-md-4">
+        <label class="form-label">Timeframe</label>
+        <select name="status" class="form-select">
+          <option value="upcoming" {% if status_filter == 'upcoming' %}selected{% endif %}>Upcoming</option>
+          <option value="past" {% if status_filter == 'past' %}selected{% endif %}>Past Events</option>
+          <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Time</option>
+        </select>
+      </div>
+
+      <div class="col-lg-2 col-md-4">
+        <label class="form-label">Sort By</label>
+        <select name="sort" class="form-select">
+          <option value="date_asc" {% if sort_by == 'date_asc' %}selected{% endif %}>Earliest Date</option>
+          <option value="date_desc" {% if sort_by == 'date_desc' %}selected{% endif %}>Latest Date</option>
+          <option value="title" {% if sort_by == 'title' %}selected{% endif %}>Title (A-Z)</option>
+        </select>
+      </div>
+
+      <div class="col-lg-1 col-md-4 d-grid">
+        <button type="submit" class="btn btn-mv-primary" title="Apply Filters">
+          <i class="bi bi-funnel-fill"></i>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="small text-muted">Showing <strong>{{ total_results }}</strong> event{{ total_results|pluralize }}</span>
+    {% if search_query or selected_category %}
+      <a href="{% url 'public:explore' %}" class="small text-danger"><i class="bi bi-x-circle me-1"></i> Clear filters</a>
+    {% endif %}
+  </div>
+
+  <!-- Events Grid -->
+  <div class="row g-4">
+    {% for event in events %}
+      <div class="col-lg-4 col-md-6">
+        <div class="mv-card event-card">
+          <div class="event-card-img-wrapper">
+            {% if event.cover_image %}
+              <img src="{{ event.cover_image.url }}" alt="{{ event.title }}" class="event-card-img">
+            {% else %}
+              <div class="w-100 h-100 d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #131936 0%, #1e295d 100%);">
+                <i class="bi bi-calendar4-event fs-1 text-dim"></i>
+              </div>
+            {% endif %}
+            <span class="event-category-badge">{{ event.category.name }}</span>
+            <span class="event-date-badge">{{ event.start_datetime|date:"M d, H:i" }}</span>
+          </div>
+          <div class="p-4 d-flex flex-column flex-grow-1">
+            <h5 class="fw-bold mb-2">
+              <a href="{{ event.get_absolute_url }}" class="text-white text-decoration-none">{{ event.title }}</a>
+            </h5>
+            <p class="small text-muted mb-3 flex-grow-1">
+              {{ event.description|truncatewords:20 }}
+            </p>
+            <div class="d-flex align-items-center justify-content-between small text-dim pt-3 border-top" style="border-color: var(--mv-border) !important;">
+              <span><i class="bi bi-geo-alt me-1 text-danger"></i> {{ event.venue }}</span>
+              <span>
+                {% if event.is_full %}
+                  <span class="text-danger fw-semibold">Event Full</span>
+                {% else %}
+                  <span class="text-success fw-semibold">{{ event.remaining_seats }} left</span>
+                {% endif %}
+              </span>
+            </div>
+            <div class="mt-3">
+              <a href="{{ event.get_absolute_url }}" class="btn btn-mv-outline w-100">View Event & Register</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="mv-card p-5 text-center text-muted">
+          <i class="bi bi-search fs-1 mb-3 text-dim d-block"></i>
+          <h4 class="text-white">No Matching Events Found</h4>
+          <p class="small text-muted mb-3">Try adjusting your keyword, category, or timeframe filters.</p>
+          <a href="{% url 'public:explore' %}" class="btn btn-mv-outline">Reset All Filters</a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

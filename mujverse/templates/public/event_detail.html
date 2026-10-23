@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}{{ event.title }} — MUJVERSE{% endblock %}
+{% block meta_description %}{{ event.description|truncatewords:25 }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{% url 'public:home' %}">Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'public:explore' %}">Events</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'public:explore' %}?category={{ event.category.slug }}">{{ event.category.name }}</a></li>
+      <li class="breadcrumb-item active text-muted" aria-current="page">{{ event.title|truncatechars:35 }}</li>
+    </ol>
+  </nav>
+
+  <div class="row g-4">
+    <!-- Main Column: Event Info -->
+    <div class="col-lg-8">
+      <div class="mv-card p-4 p-md-5 mb-4">
+        <!-- Cover Image -->
+        {% if event.cover_image %}
+          <div class="rounded-4 overflow-hidden mb-4" style="max-height: 380px;">
+            <img src="{{ event.cover_image.url }}" alt="{{ event.title }}" class="w-100 h-100" style="object-fit: cover;">
+          </div>
+        {% endif %}
+
+        <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+          <span class="event-category-badge position-static">{{ event.category.name }}</span>
+          {% if event.is_registration_open %}
+            <span class="badge bg-success">Registration Open</span>
+          {% elif event.is_full %}
+            <span class="badge bg-danger">Capacity Reached</span>
+          {% else %}
+            <span class="badge bg-secondary">Registration Closed</span>
+          {% endif %}
+        </div>
+
+        <h1 class="h2 fw-bold mb-3">{{ event.title }}</h1>
+
+        <div class="d-flex align-items-center gap-3 text-muted small pb-3 mb-4 border-bottom" style="border-color: var(--mv-border) !important;">
+          <span><i class="bi bi-person-circle me-1 text-info"></i> Organized by: <strong>{{ event.organizer.profile.display_name|default:event.organizer.username }}</strong></span>
+          <span>&bull;</span>
+          <span><i class="bi bi-clock me-1 text-warning"></i> Posted: {{ event.created_at|date:"M d, Y" }}</span>
+        </div>
+
+        <h4 class="h5 fw-bold mb-3">About This Event</h4>
+        <div class="text-body lead fs-6 mb-4" style="white-space: pre-line;">
+          {{ event.description }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Column: Logistics & Registration Action -->
+    <div class="col-lg-4">
+      <div class="mv-card p-4 sticky-top" style="top: 100px;">
+        <h5 class="fw-bold mb-4 pb-2 border-bottom" style="border-color: var(--mv-border) !important;">
+          Event Details
+        </h5>
+
+        <!-- Time & Date -->
+        <div class="d-flex align-items-start gap-3 mb-3">
+          <div class="p-2 rounded-3 text-info" style="background: rgba(6, 182, 212, 0.15); border: 1px solid var(--mv-border-cyan);">
+            <i class="bi bi-calendar-event fs-5"></i>
+          </div>
+          <div>
+            <div class="small text-muted">Starts</div>
+            <div class="fw-bold text-white">{{ event.start_datetime|date:"l, M d, Y" }}</div>
+            <div class="small text-dim">{{ event.start_datetime|date:"h:i A" }} - {{ event.end_datetime|date:"h:i A" }}</div>
+          </div>
+        </div>
+
+        <!-- Venue -->
+        <div class="d-flex align-items-start gap-3 mb-3">
+          <div class="p-2 rounded-3 text-danger" style="background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3);">
+            <i class="bi bi-geo-alt-fill fs-5"></i>
+          </div>
+          <div>
+            <div class="small text-muted">Campus Venue</div>
+            <div class="fw-bold text-white">{{ event.venue }}</div>
+            <div class="small text-dim">Manipal University Jaipur</div>
+          </div>
+        </div>
+
+        <!-- Registration Deadline -->
+        <div class="d-flex align-items-start gap-3 mb-4">
+          <div class="p-2 rounded-3 text-warning" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3);">
+            <i class="bi bi-hourglass-split fs-5"></i>
+          </div>
+          <div>
+            <div class="small text-muted">Registration Deadline</div>
+            <div class="fw-bold text-white">{{ event.registration_deadline|date:"M d, Y h:i A" }}</div>
+          </div>
+        </div>
+
+        <!-- Capacity Bar -->
+        <div class="mb-4">
+          <div class="d-flex justify-content-between small mb-1">
+            <span class="text-muted">Seats Claimed</span>
+            <span class="fw-bold text-white">{{ event.confirmed_registrations_count }} / {{ event.capacity }}</span>
+          </div>
+          <div class="progress" style="height: 8px; background: rgba(255, 255, 255, 0.1);">
+            <div class="progress-bar bg-info" role="progressbar" style="width: {% widthratio event.confirmed_registrations_count event.capacity 100 %}%;"></div>
+          </div>
+        </div>
+
+        <!-- Action Area -->
+        {% if user_registration %}
+          <!-- Student already confirmed -->
+          <div class="p-3 rounded-3 mb-3 text-center" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3);">
+            <i class="bi bi-check-circle-fill text-success fs-3 mb-2 d-block"></i>
+            <h6 class="fw-bold text-white mb-1">You Are Registered!</h6>
+            <p class="small text-muted mb-3">Your free ticket and QR code are ready.</p>
+            <a href="{% url 'student:ticket_detail' ticket_token=user_registration.ticket_token %}" class="btn btn-mv-cyan w-100">
+              <i class="bi bi-qr-code me-1"></i> View My QR Ticket
+            </a>
+          </div>
+        {% elif user.is_authenticated %}
+          {% if event.is_registration_open %}
+            <div class="d-grid mb-2">
+              <a href="{% url 'student:dashboard' %}" class="btn btn-mv-primary btn-lg">
+                <i class="bi bi-ticket-perforated-fill me-2"></i> Register for Free
+              </a>
+            </div>
+            <div class="text-center small text-dim">100% Free registration for MUJ students</div>
+          {% else %}
+            <button class="btn btn-secondary btn-lg w-100" disabled>
+              Registration Closed
+            </button>
+          {% endif %}
+        {% else %}
+          <div class="d-grid gap-2">
+            <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-mv-primary btn-lg">
+              Log in to Register
+            </a>
+            <a href="{% url 'accounts:register' %}" class="btn btn-mv-outline">
+              Sign up as Student
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

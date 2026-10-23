@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications — MUJVERSE{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h2 fw-bold mb-1">Notifications</h1>
+      <p class="text-muted small mb-0">Stay informed about event updates, approvals, and reminders.</p>
+    </div>
+    {% if notifications %}
+      <form action="{% url 'notifications:mark_all_read' %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-mv-outline">
+          <i class="bi bi-check2-all me-1"></i> Mark All as Read
+        </button>
+      </form>
+    {% endif %}
+  </div>
+
+  <div class="mv-card p-3">
+    {% for notif in notifications %}
+      <div class="p-3 mb-2 rounded-3 d-flex align-items-center justify-content-between {% if not notif.is_read %}border-start border-4 border-primary{% endif %}" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--mv-border);">
+        <div class="d-flex align-items-start gap-3">
+          <div class="p-2 rounded-circle" style="background: rgba(124, 58, 237, 0.2);">
+            <i class="bi bi-bell-fill text-info"></i>
+          </div>
+          <div>
+            <h6 class="fw-bold mb-1 {% if not notif.is_read %}text-white{% else %}text-muted{% endif %}">{{ notif.title }}</h6>
+            <p class="small text-muted mb-1">{{ notif.message }}</p>
+            <span class="text-dim small">{{ notif.created_at|timesince }} ago</span>
+          </div>
+        </div>
+
+        <div>
+          {% if not notif.is_read %}
+            <form action="{% url 'notifications:mark_read' pk=notif.pk %}" method="post">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-link text-info text-decoration-none" title="Mark as read">
+                <i class="bi bi-check2"></i>
+              </button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    {% empty %}
+      <div class="text-center text-muted py-5">
+        <i class="bi bi-bell-slash fs-1 text-dim mb-3 d-block"></i>
+        <h5>No Notifications Yet</h5>
+        <p class="small text-muted">You're all caught up!</p>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Content Reports — MUJVERSE Admin{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <a href="{% url 'platform_admin:dashboard' %}" class="small text-muted">&larr; Admin Dashboard</a>
+      <h1 class="h2 fw-bold mb-0 mt-1">Content Reports Moderation</h1>
+    </div>
+  </div>
+
+  <div class="mv-card p-4">
+    <div class="table-responsive">
+      <table class="table table-dark table-hover mb-0 align-middle">
+        <thead>
+          <tr class="text-muted small">
+            <th>ID</th>
+            <th>Reason</th>
+            <th>Target</th>
+            <th>Reported By</th>
+            <th>Status</th>
+            <th>Reported On</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in reports %}
+            <tr>
+              <td>#{{ r.id }}</td>
+              <td class="fw-bold text-white">{{ r.reason }}</td>
+              <td class="small">
+                {% if r.event %}Event: {{ r.event.title }}{% elif r.reported_user %}User: {{ r.reported_user.username }}{% else %}-{% endif %}
+              </td>
+              <td class="small">{{ r.reported_by.username }}</td>
+              <td>
+                {% if r.status == 'open' %}
+                  <span class="badge bg-danger">Open</span>
+                {% elif r.status == 'under_review' %}
+                  <span class="badge bg-warning text-dark">Under Review</span>
+                {% else %}
+                  <span class="badge bg-secondary">{{ r.get_status_display }}</span>
+                {% endif %}
+              </td>
+              <td class="small text-dim">{{ r.created_at|date:"M d, Y" }}</td>
+              <td>
+                <a href="/admin/moderation/eventreport/{{ r.id }}/change/" target="_blank" class="btn btn-sm btn-mv-outline">
+                  Review
+                </a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="7" class="text-center text-muted py-5">
+                <i class="bi bi-shield-check fs-2 text-success d-block mb-2"></i>
+                No reports submitted. The campus community is healthy!
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

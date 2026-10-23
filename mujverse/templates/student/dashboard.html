@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard — MUJVERSE{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <!-- Welcome Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <h1 class="h2 fw-bold mb-0">Student Portal</h1>
+        <span class="badge badge-role-student">Student</span>
+      </div>
+      <p class="text-muted small mb-0">Welcome back, <strong>{{ user.profile.display_name|default:user.username }}</strong>. Manage your passes and campus registrations.</p>
+    </div>
+    <div class="mt-3 mt-md-0 d-flex gap-2">
+      <a href="{% url 'public:explore' %}" class="btn btn-mv-primary">
+        <i class="bi bi-search me-1"></i> Browse Events
+      </a>
+      <a href="{% url 'accounts:profile' %}" class="btn btn-mv-outline">
+        <i class="bi bi-gear me-1"></i> Settings
+      </a>
+    </div>
+  </div>
+
+  <!-- Real Statistics Row (no fake stats) -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4 col-12">
+      <div class="stat-card">
+        <div class="stat-value text-info">{{ upcoming_registrations.count }}</div>
+        <div class="stat-label">Upcoming Events</div>
+      </div>
+    </div>
+    <div class="col-md-4 col-12">
+      <div class="stat-card">
+        <div class="stat-value" style="color: #a78bfa;">{{ total_registered }}</div>
+        <div class="stat-label">Total Passes Issued</div>
+      </div>
+    </div>
+    <div class="col-md-4 col-12">
+      <div class="stat-card">
+        <div class="stat-value text-success">{{ total_attended }}</div>
+        <div class="stat-label">Attended & Verified</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upcoming Registered Events with QR Pass Access -->
+  <div class="mb-5">
+    <h3 class="h4 fw-bold mb-3 d-flex align-items-center gap-2">
+      <i class="bi bi-ticket-perforated-fill text-info"></i> Upcoming Registered Events
+    </h3>
+
+    {% if upcoming_registrations %}
+      <div class="row g-4">
+        {% for reg in upcoming_registrations %}
+          <div class="col-lg-6">
+            <div class="mv-card p-4 h-100 d-flex flex-column justify-content-between">
+              <div>
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <span class="event-category-badge position-static">{{ reg.event.category.name }}</span>
+                  <span class="badge bg-success">Confirmed</span>
+                </div>
+                <h5 class="fw-bold mb-2">
+                  <a href="{{ reg.event.get_absolute_url }}" class="text-white text-decoration-none">{{ reg.event.title }}</a>
+                </h5>
+                <div class="small text-muted mb-2">
+                  <i class="bi bi-clock me-1 text-warning"></i> {{ reg.event.start_datetime|date:"l, M d, Y - h:i A" }}
+                </div>
+                <div class="small text-dim mb-3">
+                  <i class="bi bi-geo-alt me-1 text-danger"></i> {{ reg.event.venue }}
+                </div>
+              </div>
+
+              <div class="pt-3 border-top d-flex align-items-center justify-content-between" style="border-color: var(--mv-border) !important;">
+                <span class="small font-monospace text-muted">Token: {{ reg.ticket_token|truncatechars:12 }}</span>
+                <a href="{% url 'student:ticket_detail' ticket_token=reg.ticket_token %}" class="btn btn-sm btn-mv-cyan">
+                  <i class="bi bi-qr-code me-1"></i> Open QR Ticket
+                </a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="mv-card p-5 text-center text-muted">
+        <i class="bi bi-ticket-detailed fs-1 text-dim mb-3 d-block"></i>
+        <h5 class="text-white">No Upcoming Registrations</h5>
+        <p class="small text-muted mb-3">You haven't registered for any upcoming events yet. Campus events are 100% free!</p>
+        <a href="{% url 'public:explore' %}" class="btn btn-mv-primary">Discover Events Now</a>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Past Events History -->
+  {% if past_registrations %}
+    <div>
+      <h3 class="h5 fw-bold mb-3 text-muted">Past Events History</h3>
+      <div class="table-responsive mv-card p-3">
+        <table class="table table-dark table-hover mb-0 align-middle">
+          <thead>
+            <tr class="text-muted small">
+              <th>Event</th>
+              <th>Category</th>
+              <th>Date</th>
+              <th>Attendance Status</th>
+              <th>Ticket Token</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for past in past_registrations %}
+              <tr>
+                <td class="fw-bold text-white">{{ past.event.title }}</td>
+                <td><span class="badge bg-dark border border-secondary">{{ past.event.category.name }}</span></td>
+                <td class="small text-muted">{{ past.event.start_datetime|date:"M d, Y" }}</td>
+                <td>
+                  {% if past.is_checked_in %}
+                    <span class="badge bg-success"><i class="bi bi-check2 me-1"></i> Checked In</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Absent</span>
+                  {% endif %}
+                </td>
+                <td class="font-monospace small text-dim">{{ past.ticket_token|truncatechars:12 }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Ticket Pass — {{ registration.event.title }} — MUJVERSE{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+      <div class="mb-3">
+        <a href="{% url 'student:dashboard' %}" class="small text-muted">&larr; Back to Student Dashboard</a>
+      </div>
+
+      <div class="mv-card p-4 p-md-5 border-info" style="border-style: dashed; border-width: 2px;">
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom" style="border-color: var(--mv-border) !important;">
+          <div class="mv-brand">
+            <i class="bi bi-rocket-takeoff-fill text-info"></i>
+            <span>MUJ<span class="text-primary" style="color: #a78bfa !important;">VERSE</span></span>
+          </div>
+          <span class="badge bg-success px-3 py-2">Confirmed Pass</span>
+        </div>
+
+        <div class="text-center mb-4">
+          <div class="d-inline-block p-4 rounded-4 bg-white text-dark shadow-lg mb-3">
+            <!-- QR code representation / placeholder for token -->
+            <div style="width: 180px; height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff;">
+              <i class="bi bi-qr-code fs-1 text-dark" style="font-size: 7rem !important;"></i>
+            </div>
+            <div class="font-monospace text-center small text-muted mt-2" style="font-size: 0.7rem;">
+              {{ registration.ticket_token }}
+            </div>
+          </div>
+          <div class="small text-muted">Present this QR code at the venue scanner for entry verification.</div>
+        </div>
+
+        <div class="p-3 rounded-3 mb-4" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--mv-border);">
+          <div class="text-muted small">Event</div>
+          <h4 class="fw-bold text-white mb-2">{{ registration.event.title }}</h4>
+
+          <div class="row g-2 small text-dim">
+            <div class="col-6">
+              <span class="text-muted d-block">Attendee:</span>
+              <strong class="text-white">{{ registration.student.profile.display_name|default:registration.student.username }}</strong>
+            </div>
+            <div class="col-6">
+              <span class="text-muted d-block">Student ID:</span>
+              <strong class="text-white">{{ registration.student.profile.student_identifier|default:"Not Provided" }}</strong>
+            </div>
+            <div class="col-6 mt-2">
+              <span class="text-muted d-block">Date & Time:</span>
+              <strong class="text-white">{{ registration.event.start_datetime|date:"M d, Y h:i A" }}</strong>
+            </div>
+            <div class="col-6 mt-2">
+              <span class="text-muted d-block">Venue:</span>
+              <strong class="text-white">{{ registration.event.venue }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center">
+          <button onclick="window.print()" class="btn btn-mv-outline">
+            <i class="bi bi-printer me-1"></i> Print / Save Pass
+          </button>
+          {% if registration.is_checked_in %}
+            <span class="badge bg-success p-2"><i class="bi bi-check2-circle me-1"></i> Already Checked In</span>
+          {% else %}
+            <span class="badge bg-info p-2"><i class="bi bi-hourglass-split me-1"></i> Ready for Check-in</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
