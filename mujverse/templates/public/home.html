@@ -4,14 +4,14 @@
 {% block title %}MUJVERSE — Your Campus. Your Universe.{% endblock %}
 
 {% block content %}
-<!-- ── Hero Section ────────────────────────────────────── -->
+<!-- ── Hero Section with MUJ Campus Background & Sunset Glow ── -->
 <section class="mv-hero">
-  <div class="container">
-    <div class="row align-items-center">
-      <div class="col-lg-8">
-        <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3" style="background: rgba(124, 58, 237, 0.15); border: 1px solid var(--mv-border-violet);">
-          <span class="badge bg-primary" style="background: var(--mv-violet-primary) !important;">MUJ Official</span>
-          <span class="small text-light">Campus Events & Free Ticketing Platform</span>
+  <div class="container position-relative" style="z-index: 2;">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7">
+        <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3" style="background: var(--mv-orange-subtle); border: 1.5px solid var(--mv-border);">
+          <span class="badge text-white" style="background: var(--mv-orange-primary) !important;">MUJ Official</span>
+          <span class="small fw-semibold" style="color: var(--mv-orange-deep);">Manipal University Jaipur Campus Portal</span>
         </div>
         <h1 class="mv-hero-title">
           Your Campus. <br><span class="gradient-text">Your Universe.</span>
@@ -24,9 +24,9 @@
         <form action="{% url 'public:explore' %}" method="get" class="mb-4">
           <div class="row g-2">
             <div class="col-md-8">
-              <div class="input-group input-group-lg">
-                <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
-                <input type="text" name="q" class="form-control" placeholder="Search events by title, keyword, or venue..." aria-label="Search events">
+              <div class="input-group input-group-lg shadow-sm">
+                <span class="input-group-text bg-white border-end-0" style="border-color: var(--mv-border); color: var(--mv-orange-primary);"><i class="bi bi-search"></i></span>
+                <input type="text" name="q" class="form-control border-start-0" placeholder="Search events by title, keyword, or venue..." aria-label="Search events">
               </div>
             </div>
             <div class="col-md-4">
@@ -37,25 +37,35 @@
           </div>
         </form>
 
-        <div class="d-flex flex-wrap gap-3 align-items-center text-dim small">
-          <span><i class="bi bi-check2-circle text-success me-1"></i> 100% Free Registrations</span>
-          <span><i class="bi bi-qr-code text-info me-1"></i> Instant QR Ticket Generation</span>
-          <span><i class="bi bi-shield-check text-primary me-1"></i> Verified MUJ Clubs</span>
+        <div class="d-flex flex-wrap gap-3 align-items-center small" style="color: var(--mv-text-muted);">
+          <span><i class="bi bi-check2-circle me-1" style="color: var(--mv-emerald-success);"></i> 100% Free Registrations</span>
+          <span><i class="bi bi-qr-code me-1" style="color: var(--mv-orange-primary);"></i> Instant QR Ticket Generation</span>
+          <span><i class="bi bi-shield-check me-1" style="color: var(--mv-orange-deep);"></i> Verified MUJ Clubs</span>
         </div>
       </div>
 
-      <div class="col-lg-4 d-none d-lg-block">
-        <div class="mv-card p-4 text-center">
-          <div class="p-4 rounded-4 mb-3" style="background: radial-gradient(circle, rgba(124, 58, 237, 0.25) 0%, rgba(6, 182, 212, 0.05) 100%);">
-            <i class="bi bi-ticket-perforated-fill fs-1 text-info mb-2 d-block"></i>
-            <h5 class="fw-bold mb-1">One-Click QR Pass</h5>
-            <p class="small text-muted mb-0">Register with your student ID and display your ticket code directly at the venue scanner.</p>
+      <!-- Campus Image Card Preview -->
+      <div class="col-lg-5">
+        <div class="hero-campus-banner">
+          <img src="{% static 'images/muj_campus_hero.png' %}" alt="Manipal University Jaipur Campus" class="hero-campus-img">
+          <div class="p-4 bg-white">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="badge" style="background: var(--mv-orange-subtle); color: var(--mv-orange-deep); border: 1px solid var(--mv-border); font-weight: 700;">
+                <i class="bi bi-geo-alt-fill me-1"></i> MUJ Main Campus
+              </span>
+              <span class="small text-muted"><i class="bi bi-sun-fill text-warning me-1"></i> Jaipur, Rajasthan</span>
+            </div>
+            <h5 class="fw-bold mb-1" style="color: var(--mv-text-high);">The Heart of Student Life</h5>
+            <p class="small text-muted mb-3">Join thousands of MUJ students attending live campus events, fests, and competitions.</p>
+            {% if not user.is_authenticated %}
+              <div class="d-flex gap-2">
+                <a href="{% url 'accounts:register' %}" class="btn btn-mv-primary btn-sm flex-grow-1">Student Registration</a>
+                <a href="{% url 'accounts:login' %}" class="btn btn-mv-outline btn-sm">Log In</a>
+              </div>
+            {% else %}
+              <a href="{% url 'accounts:dashboard_redirect' %}" class="btn btn-mv-outline btn-sm w-100">Go to My Dashboard &rarr;</a>
+            {% endif %}
           </div>
-          {% if not user.is_authenticated %}
-            <a href="{% url 'accounts:register' %}" class="btn btn-mv-cyan w-100">Get Started Free</a>
-          {% else %}
-            <a href="{% url 'accounts:dashboard_redirect' %}" class="btn btn-mv-outline w-100">View My Dashboard</a>
-          {% endif %}
         </div>
       </div>
     </div>
@@ -63,19 +73,19 @@
 </section>
 
 <!-- ── Real Stats Strip ─────────────────────────────────── -->
-<section class="py-4 border-top border-bottom" style="border-color: var(--mv-border) !important; background: rgba(12, 16, 34, 0.6);">
+<section class="py-4 border-top border-bottom bg-white" style="border-color: var(--mv-border) !important;">
   <div class="container">
     <div class="row g-4 text-center">
       <div class="col-md-4 col-12">
-        <div class="stat-value text-info">{{ total_events_hosted }}</div>
+        <div class="stat-value">{{ total_events_hosted }}</div>
         <div class="stat-label">Events Published</div>
       </div>
       <div class="col-md-4 col-12">
-        <div class="stat-value" style="color: #a78bfa;">{{ total_registrations }}</div>
+        <div class="stat-value" style="color: #ea580c;">{{ total_registrations }}</div>
         <div class="stat-label">Student Registrations</div>
       </div>
       <div class="col-md-4 col-12">
-        <div class="stat-value text-success">{{ active_categories_count }}</div>
+        <div class="stat-value" style="color: #c2410c;">{{ active_categories_count }}</div>
         <div class="stat-label">Event Categories</div>
       </div>
     </div>
@@ -83,14 +93,14 @@
 </section>
 
 <!-- ── Browse by Category ───────────────────────────────── -->
-<section class="py-5">
+<section class="py-5" style="background: #faf9f6;">
   <div class="container">
     <div class="d-flex justify-content-between align-items-end mb-4">
       <div>
         <h2 class="h3 fw-bold mb-1">Browse by Category</h2>
         <p class="text-muted small mb-0">Explore events that match your interests and passions.</p>
       </div>
-      <a href="{% url 'public:categories' %}" class="small text-info">View All Categories &rarr;</a>
+      <a href="{% url 'public:categories' %}" class="small fw-semibold" style="color: var(--mv-orange-primary);">View All Categories &rarr;</a>
     </div>
 
     <div class="row g-3">
@@ -98,11 +108,11 @@
         <div class="col-lg-3 col-md-4 col-6">
           <a href="{% url 'public:explore' %}?category={{ cat.slug }}" class="text-decoration-none">
             <div class="mv-card p-3 h-100 d-flex align-items-center gap-3">
-              <div class="p-2 rounded-3" style="background: rgba(124, 58, 237, 0.15); border: 1px solid var(--mv-border-violet);">
-                <i class="bi {{ cat.icon|default:'bi-calendar-event' }} fs-4 text-info"></i>
+              <div class="p-2 rounded-3" style="background: var(--mv-orange-subtle); border: 1px solid var(--mv-border);">
+                <i class="bi {{ cat.icon|default:'bi-calendar-event' }} fs-4" style="color: var(--mv-orange-primary);"></i>
               </div>
               <div>
-                <h6 class="mb-0 fw-bold text-white">{{ cat.name }}</h6>
+                <h6 class="mb-0 fw-bold" style="color: var(--mv-text-high);">{{ cat.name }}</h6>
                 <span class="small text-muted">{{ cat.events.count }} event{{ cat.events.count|pluralize }}</span>
               </div>
             </div>
@@ -111,7 +121,7 @@
       {% empty %}
         <div class="col-12">
           <div class="mv-card p-4 text-center text-muted">
-            <i class="bi bi-inbox fs-2 mb-2 d-block"></i>
+            <i class="bi bi-inbox fs-2 mb-2 d-block" style="color: var(--mv-orange-primary);"></i>
             Categories will appear here once configured by the platform administrator.
           </div>
         </div>
@@ -121,14 +131,14 @@
 </section>
 
 <!-- ── Featured Events ──────────────────────────────────── -->
-<section class="py-5" style="background: rgba(12, 16, 34, 0.4);">
+<section class="py-5 bg-white border-top" style="border-color: var(--mv-border) !important;">
   <div class="container">
     <div class="d-flex justify-content-between align-items-end mb-4">
       <div>
         <h2 class="h3 fw-bold mb-1">Featured Campus Events</h2>
         <p class="text-muted small mb-0">Handpicked upcoming experiences at MUJ.</p>
       </div>
-      <a href="{% url 'public:explore' %}" class="small text-info">Explore All Events &rarr;</a>
+      <a href="{% url 'public:explore' %}" class="small fw-semibold" style="color: var(--mv-orange-primary);">Explore All Events &rarr;</a>
     </div>
 
     <div class="row g-4">
@@ -139,8 +149,8 @@
               {% if event.cover_image %}
                 <img src="{{ event.cover_image.url }}" alt="{{ event.title }}" class="event-card-img">
               {% else %}
-                <div class="w-100 h-100 d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #131936 0%, #1e295d 100%);">
-                  <i class="bi bi-calendar4-event fs-1 text-dim"></i>
+                <div class="w-100 h-100 d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);">
+                  <i class="bi bi-calendar4-event fs-1" style="color: var(--mv-orange-primary);"></i>
                 </div>
               {% endif %}
               <span class="event-category-badge">{{ event.category.name }}</span>
@@ -148,18 +158,18 @@
             </div>
             <div class="p-4 d-flex flex-column flex-grow-1">
               <h5 class="fw-bold mb-2">
-                <a href="{{ event.get_absolute_url }}" class="text-white text-decoration-none">{{ event.title }}</a>
+                <a href="{{ event.get_absolute_url }}" class="text-decoration-none" style="color: var(--mv-text-high);">{{ event.title }}</a>
               </h5>
               <p class="small text-muted mb-3 flex-grow-1">
                 {{ event.description|truncatewords:18 }}
               </p>
-              <div class="d-flex align-items-center justify-content-between small text-dim pt-3 border-top" style="border-color: var(--mv-border) !important;">
+              <div class="d-flex align-items-center justify-content-between small pt-3 border-top" style="border-color: var(--mv-border-light) !important; color: var(--mv-text-muted);">
                 <span><i class="bi bi-geo-alt me-1 text-danger"></i> {{ event.venue }}</span>
                 <span>
                   {% if event.is_full %}
                     <span class="text-danger fw-semibold">Event Full</span>
                   {% else %}
-                    <span class="text-success fw-semibold">{{ event.remaining_seats }} seat{{ event.remaining_seats|pluralize }} left</span>
+                    <span class="fw-semibold" style="color: var(--mv-emerald-success);">{{ event.remaining_seats }} seat{{ event.remaining_seats|pluralize }} left</span>
                   {% endif %}
                 </span>
               </div>
@@ -172,8 +182,8 @@
       {% empty %}
         <div class="col-12">
           <div class="mv-card p-5 text-center text-muted">
-            <i class="bi bi-calendar-x fs-1 mb-3 text-dim d-block"></i>
-            <h5 class="text-white">No Upcoming Events Yet</h5>
+            <i class="bi bi-calendar-x fs-1 mb-3 d-block" style="color: var(--mv-orange-primary);"></i>
+            <h5 style="color: var(--mv-text-high);">No Upcoming Events Yet</h5>
             <p class="small text-muted mb-3">Campus organizers are preparing exciting events. Check back soon or browse categories.</p>
             <a href="{% url 'public:explore' %}" class="btn btn-mv-outline">Browse All Archives</a>
           </div>

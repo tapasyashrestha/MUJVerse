@@ -27,13 +27,13 @@
   <nav class="navbar navbar-expand-lg mv-navbar">
     <div class="container">
       <a class="navbar-brand mv-brand" href="{% url 'public:home' %}">
-        <i class="bi bi-rocket-takeoff-fill text-info"></i>
-        <span>MUJ<span class="text-primary" style="color: #a78bfa !important;">VERSE</span></span>
+        <i class="bi bi-rocket-takeoff-fill text-warning" style="color: var(--mv-orange-primary) !important;"></i>
+        <span>MUJ<span style="color: var(--mv-orange-primary) !important;">VERSE</span></span>
         <span class="brand-badge">MUJ</span>
       </a>
 
-      <button class="navbar-toggler text-white border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mujverseNav" aria-controls="mujverseNav" aria-expanded="false" aria-label="Toggle navigation">
-        <i class="bi bi-list fs-2"></i>
+      <button class="navbar-toggler text-dark border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mujverseNav" aria-controls="mujverseNav" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="bi bi-list fs-2 text-dark"></i>
       </button>
 
       <div class="collapse navbar-collapse" id="mujverseNav">
@@ -92,13 +92,13 @@
                   <span class="badge badge-role-student">Student</span>
                 {% endif %}
               </button>
-              <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg" style="background: var(--mv-bg-surface); border: 1px solid var(--mv-border);">
+              <ul class="dropdown-menu dropdown-menu-end shadow-lg" style="background: var(--mv-bg-surface); border: 1px solid var(--mv-border);">
                 <li>
-                  <div class="px-3 py-2 border-bottom" style="border-color: var(--mv-border) !important;">
-                    <div class="fw-bold text-white">{{ user.profile.display_name|default:user.username }}</div>
+                  <div class="px-3 py-2 border-bottom" style="border-color: var(--mv-border-light) !important;">
+                    <div class="fw-bold" style="color: var(--mv-text-high);">{{ user.profile.display_name|default:user.username }}</div>
                     <div class="small text-muted">{{ user.email }}</div>
                     {% if user.profile.student_identifier %}
-                      <div class="small text-info mt-1"><i class="bi bi-card-text me-1"></i> ID: {{ user.profile.student_identifier }}</div>
+                      <div class="small mt-1" style="color: var(--mv-orange-deep);"><i class="bi bi-card-text me-1"></i> ID: {{ user.profile.student_identifier }}</div>
                     {% endif %}
                   </div>
                 </li>
@@ -162,13 +162,13 @@
       <div class="row g-4">
         <div class="col-lg-4 col-md-6">
           <div class="mv-brand mb-2">
-            <i class="bi bi-rocket-takeoff-fill text-info"></i>
-            <span>MUJ<span class="text-primary" style="color: #a78bfa !important;">VERSE</span></span>
+            <i class="bi bi-rocket-takeoff-fill text-warning" style="color: var(--mv-orange-primary) !important;"></i>
+            <span>MUJ<span style="color: var(--mv-orange-primary) !important;">VERSE</span></span>
           </div>
           <p class="small text-muted mb-3">
             Your Campus. Your Universe. The centralized campus events and free ticketing platform for Manipal University Jaipur.
           </p>
-          <div class="small text-dim">
+          <div class="small text-muted">
             <i class="bi bi-geo-alt me-1 text-danger"></i> Dehmi Kalan, Jaipur-Ajmer Expressway, Rajasthan 303007
           </div>
         </div>
@@ -195,8 +195,8 @@
               <li><a href="{% url 'accounts:login' %}">Student Login</a></li>
               <li><a href="{% url 'accounts:register' %}">Student Registration</a></li>
             {% endif %}
-            <li><span class="text-dim">Free Registrations Only</span></li>
-            <li><span class="text-dim">QR Attendance Check-in</span></li>
+            <li><span class="text-muted">Free Registrations Only</span></li>
+            <li><span class="text-muted">QR Attendance Check-in</span></li>
           </ul>
         </div>
 
@@ -205,8 +205,8 @@
           <p class="small text-muted mb-2">
             Web Technology Academic Project demonstrating Full-stack Django 5.2, MySQL 8, MVT architecture, and modern responsive design.
           </p>
-          <div class="badge bg-dark border border-secondary text-light p-2">
-            <i class="bi bi-code-slash text-info me-1"></i> Python 3.14 &bull; Django 5.2 &bull; MySQL 8
+          <div class="badge p-2" style="background: var(--mv-orange-subtle); border: 1px solid var(--mv-border); color: var(--mv-orange-deep);">
+            <i class="bi bi-code-slash me-1"></i> Python 3.14 &bull; Django 5.2 &bull; MySQL 8
           </div>
         </div>
       </div>
