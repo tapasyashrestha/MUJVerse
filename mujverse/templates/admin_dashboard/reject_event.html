@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Reject Event — MUJVERSE Admin{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 700px;">
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item">
+        <a href="{% url 'platform_admin:dashboard' %}" class="text-muted">Admin Dashboard</a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{% url 'platform_admin:pending_events' %}" class="text-muted">Pending Events</a>
+      </li>
+      <li class="breadcrumb-item active text-danger">Reject Event</li>
+    </ol>
+  </nav>
+
+  <!-- Event Summary Card -->
+  <div class="mv-card p-4 mb-4">
+    <div class="d-flex gap-3 align-items-start">
+      {% if event.cover_image %}
+        <img src="{{ event.cover_image.url }}" alt="Cover"
+             style="width:80px;height:60px;object-fit:cover;border-radius:8px;flex-shrink:0;">
+      {% else %}
+        <div class="rounded d-flex align-items-center justify-content-center"
+             style="width:80px;height:60px;background:rgba(255,255,255,.05);flex-shrink:0;">
+          <i class="bi bi-calendar-event text-muted fs-4"></i>
+        </div>
+      {% endif %}
+      <div>
+        <h5 class="fw-bold text-white mb-1">{{ event.title }}</h5>
+        <div class="small text-muted">
+          <span class="me-3"><i class="bi bi-person me-1"></i>{{ event.organizer.get_full_name|default:event.organizer.username }}</span>
+          <span class="me-3"><i class="bi bi-tag me-1"></i>{{ event.category.name }}</span>
+          <span><i class="bi bi-calendar3 me-1"></i>{{ event.start_datetime|date:"M d, Y" }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rejection Form -->
+  <div class="mv-card p-4 p-md-5">
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <i class="bi bi-x-circle-fill text-danger fs-4"></i>
+      <h4 class="fw-bold mb-0">Provide Rejection Reason</h4>
+    </div>
+    <p class="text-muted small mb-4">
+      This message will be visible to the organizer so they can correct the issue and resubmit.
+      Be constructive and specific about what needs to change.
+    </p>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <div class="mb-4">
+        <label for="{{ form.rejection_reason.id_for_label }}" class="form-label fw-semibold">
+          Rejection Reason <span class="text-danger">*</span>
+        </label>
+        {{ form.rejection_reason }}
+        <div class="form-text text-muted">
+          Minimum 10 characters. Explain clearly why this event was rejected and what changes are needed.
+        </div>
+        {% if form.rejection_reason.errors %}
+          <div class="invalid-feedback d-block">{{ form.rejection_reason.errors|join:" " }}</div>
+        {% endif %}
+      </div>
+
+      <div class="d-flex gap-3 justify-content-between align-items-center border-top border-secondary pt-4">
+        <a href="{% url 'platform_admin:pending_events' %}" class="btn btn-mv-outline">
+          <i class="bi bi-arrow-left me-1"></i> Cancel
+        </a>
+        <button type="submit" class="btn btn-danger px-4">
+          <i class="bi bi-x-circle me-1"></i> Confirm Rejection
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

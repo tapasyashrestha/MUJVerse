@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} Event — MUJVERSE Organizer{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 860px;">
+
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{% url 'organizer:dashboard' %}" class="text-muted">Organizer Portal</a></li>
+      <li class="breadcrumb-item active text-mv-cyan">{{ action }} Event</li>
+    </ol>
+  </nav>
+
+  <!-- Header -->
+  <div class="mb-4">
+    <h1 class="h2 fw-bold">{{ action }} Event</h1>
+    <p class="text-muted small">
+      {% if action == "Create" %}
+        Fill in the details below to create a new event draft.
+        You can save your progress and submit for admin approval when ready.
+      {% else %}
+        Update the event details. Changes are saved as a draft until resubmitted.
+      {% endif %}
+    </p>
+    {% if event and event.status == 'rejected' and event.rejection_reason %}
+      <div class="alert alert-danger border-danger d-flex gap-2 align-items-start mt-3">
+        <i class="bi bi-exclamation-triangle-fill fs-5 mt-1"></i>
+        <div>
+          <strong>This event was rejected.</strong> Please read the administrator's feedback and
+          make the required changes before resubmitting.<br>
+          <em class="small">{{ event.rejection_reason }}</em>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Form Card -->
+  <div class="mv-card p-4 p-md-5">
+    <form method="post" enctype="multipart/form-data" novalidate id="event-form">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          {% for error in form.non_field_errors %}
+            <div>{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Title & Category -->
+      <div class="row g-3 mb-3">
+        <div class="col-md-8">
+          <label for="{{ form.title.id_for_label }}" class="form-label fw-semibold">
+            Event Title <span class="text-danger">*</span>
+          </label>
+          {{ form.title }}
+          {% if form.title.errors %}
+            <div class="invalid-feedback d-block">{{ form.title.errors|join:" " }}</div>
+          {% endif %}
+        </div>
+        <div class="col-md-4">
+          <label for="{{ form.category.id_for_label }}" class="form-label fw-semibold">
+            Category <span class="text-danger">*</span>
+          </label>
+          {{ form.category }}
+          {% if form.category.errors %}
+            <div class="invalid-feedback d-block">{{ form.category.errors|join:" " }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="mb-3">
+        <label for="{{ form.description.id_for_label }}" class="form-label fw-semibold">
+          Description <span class="text-danger">*</span>
+        </label>
+        {{ form.description }}
+        <div class="form-text text-muted">Minimum 30 characters. Describe the event in detail.</div>
+        {% if form.description.errors %}
+          <div class="invalid-feedback d-block">{{ form.description.errors|join:" " }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Venue & Capacity -->
+      <div class="row g-3 mb-3">
+        <div class="col-md-8">
+          <label for="{{ form.venue.id_for_label }}" class="form-label fw-semibold">
+            Venue <span class="text-danger">*</span>
+          </label>
+          {{ form.venue }}
+          {% if form.venue.errors %}
+            <div class="invalid-feedback d-block">{{ form.venue.errors|join:" " }}</div>
+          {% endif %}
+        </div>
+        <div class="col-md-4">
+          <label for="{{ form.capacity.id_for_label }}" class="form-label fw-semibold">
+            Capacity <span class="text-danger">*</span>
+          </label>
+          {{ form.capacity }}
+          <div class="form-text text-muted">Max attendees.</div>
+          {% if form.capacity.errors %}
+            <div class="invalid-feedback d-block">{{ form.capacity.errors|join:" " }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Dates -->
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <label for="{{ form.start_datetime.id_for_label }}" class="form-label fw-semibold">
+            Start Date &amp; Time <span class="text-danger">*</span>
+          </label>
+          {{ form.start_datetime }}
+          {% if form.start_datetime.errors %}
+            <div class="invalid-feedback d-block">{{ form.start_datetime.errors|join:" " }}</div>
+          {% endif %}
+        </div>
+        <div class="col-md-4">
+          <label for="{{ form.end_datetime.id_for_label }}" class="form-label fw-semibold">
+            End Date &amp; Time <span class="text-danger">*</span>
+          </label>
+          {{ form.end_datetime }}
+          {% if form.end_datetime.errors %}
+            <div class="invalid-feedback d-block">{{ form.end_datetime.errors|join:" " }}</div>
+          {% endif %}
+        </div>
+        <div class="col-md-4">
+          <label for="{{ form.registration_deadline.id_for_label }}" class="form-label fw-semibold">
+            Registration Deadline <span class="text-danger">*</span>
+          </label>
+          {{ form.registration_deadline }}
+          <div class="form-text text-muted">Must be ≤ event start time.</div>
+          {% if form.registration_deadline.errors %}
+            <div class="invalid-feedback d-block">{{ form.registration_deadline.errors|join:" " }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Cover Image -->
+      <div class="mb-4">
+        <label for="{{ form.cover_image.id_for_label }}" class="form-label fw-semibold">
+          Cover Image
+        </label>
+        {% if event and event.cover_image %}
+          <div class="mb-2">
+            <img src="{{ event.cover_image.url }}" alt="Current cover" class="rounded"
+                 style="max-height:150px;max-width:300px;object-fit:cover;">
+            <div class="form-text text-muted">Upload a new image to replace the current one.</div>
+          </div>
+        {% endif %}
+        {{ form.cover_image }}
+        <div class="form-text text-muted">JPG, PNG, or WebP. Max 5 MB. Recommended 1200×630 px.</div>
+        {% if form.cover_image.errors %}
+          <div class="invalid-feedback d-block">{{ form.cover_image.errors|join:" " }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center border-top border-secondary pt-4 mt-2">
+        <a href="{% url 'organizer:dashboard' %}" class="btn btn-mv-outline">
+          <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+        </a>
+        <div class="d-flex gap-2 flex-wrap">
+          <button type="submit" name="action" value="save" class="btn btn-mv-outline">
+            <i class="bi bi-floppy me-1"></i> Save Draft
+          </button>
+          <button type="submit" name="action" value="submit" class="btn btn-mv-primary"
+                  onclick="return confirm('Submit this event for administrator approval? You will not be able to edit it until a decision is made.')">
+            <i class="bi bi-send me-1"></i> Save &amp; Submit for Approval
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

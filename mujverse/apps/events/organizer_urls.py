@@ -1,13 +1,16 @@
 """
-MUJVERSE — Organizer URL Patterns
+MUJVERSE — Organizer URL Patterns (Phase 2 Complete)
 """
 
 from django.urls import path
-from . import views
+from mujverse.apps.events import views
 
 app_name = "organizer"
 
 urlpatterns = [
     path("dashboard/", views.organizer_dashboard_view, name="dashboard"),
-    # Additional event management endpoints will be completed in Phase 3
+    path("events/create/", views.event_create_view, name="event_create"),
+    path("events/<int:pk>/edit/", views.event_edit_view, name="event_edit"),
+    path("events/<int:pk>/submit/", views.event_submit_view, name="event_submit"),
+    path("events/<int:pk>/delete/", views.event_delete_view, name="event_delete"),
 ]

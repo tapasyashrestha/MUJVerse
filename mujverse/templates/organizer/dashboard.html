@@ -17,8 +17,8 @@
       <a href="{% url 'public:explore' %}" class="btn btn-mv-outline">
         <i class="bi bi-eye me-1"></i> Public Catalog
       </a>
-      <a href="/admin/events/event/add/" target="_blank" class="btn btn-mv-primary">
-        <i class="bi bi-plus-circle me-1"></i> New Event Draft
+      <a href="{% url 'organizer:event_create' %}" class="btn btn-mv-primary">
+        <i class="bi bi-plus-circle me-1"></i> Create New Event
       </a>
     </div>
   </div>
@@ -45,6 +45,12 @@
     </div>
     <div class="col-md-3 col-6">
       <div class="stat-card">
+        <div class="stat-value text-danger">{{ rejected_events }}</div>
+        <div class="stat-label">Rejected</div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="stat-card">
         <div class="stat-value text-info">{{ total_registrations }}</div>
         <div class="stat-label">Total Registrations</div>
       </div>
@@ -65,7 +71,7 @@
             <th>Title</th>
             <th>Category</th>
             <th>Date</th>
-            <th>Capacity</th>
+            <th>Registrations</th>
             <th>Status</th>
             <th>Public?</th>
             <th>Actions</th>
@@ -74,7 +80,15 @@
         <tbody>
           {% for ev in events %}
             <tr>
-              <td class="fw-bold text-white">{{ ev.title }}</td>
+              <td>
+                <span class="fw-bold text-white">{{ ev.title }}</span>
+                {% if ev.status == 'rejected' and ev.rejection_reason %}
+                  <div class="small text-danger mt-1">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    <em>{{ ev.rejection_reason|truncatechars:80 }}</em>
+                  </div>
+                {% endif %}
+              </td>
               <td><span class="badge bg-dark border border-secondary">{{ ev.category.name }}</span></td>
               <td class="small text-muted">{{ ev.start_datetime|date:"M d, Y" }}</td>
               <td>
@@ -88,7 +102,7 @@
                 {% elif ev.status == 'draft' %}
                   <span class="badge badge-status-draft">Draft</span>
                 {% elif ev.status == 'rejected' %}
-                  <span class="badge badge-status-rejected" title="{{ ev.rejection_reason }}">Rejected</span>
+                  <span class="badge badge-status-rejected">Rejected</span>
                 {% else %}
                   <span class="badge badge-status-completed">{{ ev.get_status_display }}</span>
                 {% endif %}
@@ -101,13 +115,34 @@
                 {% endif %}
               </td>
               <td>
-                <div class="d-flex gap-1">
-                  <a href="{{ ev.get_absolute_url }}" class="btn btn-sm btn-mv-outline" title="View Public Page">
-                    <i class="bi bi-box-arrow-up-right"></i>
+                <div class="d-flex gap-1 flex-wrap">
+                  <a href="{{ ev.get_absolute_url }}" class="btn btn-sm btn-mv-outline" title="View">
+                    <i class="bi bi-eye"></i>
                   </a>
-                  <a href="{% url 'attendance:scanner' event_id=ev.id %}" class="btn btn-sm btn-mv-cyan" title="Launch Scanner">
-                    <i class="bi bi-qr-code-scan"></i>
-                  </a>
+                  {% if ev.status == 'draft' or ev.status == 'rejected' %}
+                    <a href="{% url 'organizer:event_edit' pk=ev.pk %}" class="btn btn-sm btn-mv-cyan" title="Edit">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    <form method="post" action="{% url 'organizer:event_submit' pk=ev.pk %}" class="d-inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-mv-primary" title="Submit for Approval"
+                              onclick="return confirm('Submit this event for admin approval?')">
+                        <i class="bi bi-send"></i>
+                      </button>
+                    </form>
+                    <form method="post" action="{% url 'organizer:event_delete' pk=ev.pk %}" class="d-inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"
+                              onclick="return confirm('Permanently delete this event?')">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </form>
+                  {% endif %}
+                  {% if ev.status == 'approved' %}
+                    <a href="{% url 'attendance:scanner' event_id=ev.id %}" class="btn btn-sm btn-mv-cyan" title="QR Scanner">
+                      <i class="bi bi-qr-code-scan"></i>
+                    </a>
+                  {% endif %}
                 </div>
               </td>
             </tr>
@@ -115,7 +150,7 @@
             <tr>
               <td colspan="7" class="text-center text-muted py-5">
                 <i class="bi bi-calendar-plus fs-2 mb-2 d-block text-dim"></i>
-                You haven't submitted any events yet. Click "New Event Draft" to begin.
+                No events yet. <a href="{% url 'organizer:event_create' %}" class="text-mv-cyan">Create your first event</a>.
               </td>
             </tr>
           {% endfor %}

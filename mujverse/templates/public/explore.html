@@ -12,15 +12,15 @@
   <!-- Filter & Search Controls -->
   <div class="mv-card p-4 mb-4">
     <form method="get" class="row g-3 align-items-end">
-      <div class="col-lg-4 col-md-6">
+      <div class="col-lg-3 col-md-6">
         <label class="form-label">Search Query</label>
         <div class="input-group">
           <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
-          <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search by title or venue...">
+          <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search title, venue...">
         </div>
       </div>
 
-      <div class="col-lg-3 col-md-6">
+      <div class="col-lg-2 col-md-6">
         <label class="form-label">Category</label>
         <select name="category" class="form-select">
           <option value="">All Categories</option>
@@ -32,10 +32,19 @@
 
       <div class="col-lg-2 col-md-4">
         <label class="form-label">Timeframe</label>
-        <select name="status" class="form-select">
-          <option value="upcoming" {% if status_filter == 'upcoming' %}selected{% endif %}>Upcoming</option>
-          <option value="past" {% if status_filter == 'past' %}selected{% endif %}>Past Events</option>
-          <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Time</option>
+        <select name="date" class="form-select">
+          <option value="upcoming" {% if date_filter == 'upcoming' or status_filter == 'upcoming' %}selected{% endif %}>Upcoming</option>
+          <option value="past" {% if date_filter == 'past' or status_filter == 'past' %}selected{% endif %}>Past Events</option>
+          <option value="all" {% if date_filter == 'all' or status_filter == 'all' %}selected{% endif %}>All Time</option>
+        </select>
+      </div>
+
+      <div class="col-lg-2 col-md-4">
+        <label class="form-label">Availability</label>
+        <select name="avail" class="form-select">
+          <option value="all" {% if avail_filter == 'all' %}selected{% endif %}>All Seats</option>
+          <option value="open" {% if avail_filter == 'open' %}selected{% endif %}>Open</option>
+          <option value="full" {% if avail_filter == 'full' %}selected{% endif %}>Full</option>
         </select>
       </div>
 
@@ -48,7 +57,7 @@
         </select>
       </div>
 
-      <div class="col-lg-1 col-md-4 d-grid">
+      <div class="col-lg-1 col-md-12 d-grid">
         <button type="submit" class="btn btn-mv-primary" title="Apply Filters">
           <i class="bi bi-funnel-fill"></i>
         </button>
@@ -58,14 +67,14 @@
 
   <div class="d-flex justify-content-between align-items-center mb-3">
     <span class="small text-muted">Showing <strong>{{ total_results }}</strong> event{{ total_results|pluralize }}</span>
-    {% if search_query or selected_category %}
+    {% if search_query or selected_category or date_filter != 'upcoming' or avail_filter != 'all' %}
       <a href="{% url 'public:explore' %}" class="small text-danger"><i class="bi bi-x-circle me-1"></i> Clear filters</a>
     {% endif %}
   </div>
 
   <!-- Events Grid -->
   <div class="row g-4">
-    {% for event in events %}
+    {% for event in page_obj %}
       <div class="col-lg-4 col-md-6">
         <div class="mv-card event-card">
           <div class="event-card-img-wrapper">
@@ -113,5 +122,42 @@
       </div>
     {% endfor %}
   </div>
+
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+    <nav aria-label="Events pagination" class="mt-5">
+      <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}date={{ date_filter }}&avail={{ avail_filter }}&sort={{ sort_by }}&page={{ page_obj.previous_page_number }}">
+              <i class="bi bi-chevron-left"></i> Previous
+            </a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-left"></i> Previous</span></li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+          {% if page_obj.number == num %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li class="page-item">
+              <a class="page-link" href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}date={{ date_filter }}&avail={{ avail_filter }}&sort={{ sort_by }}&page={{ num }}">{{ num }}</a>
+            </li>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}date={{ date_filter }}&avail={{ avail_filter }}&sort={{ sort_by }}&page={{ page_obj.next_page_number }}">
+              Next <i class="bi bi-chevron-right"></i>
+            </a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Next <i class="bi bi-chevron-right"></i></span></li>
+        {% endif %}
+      </ul>
+    </nav>
+  {% endif %}
 </div>
 {% endblock %}
