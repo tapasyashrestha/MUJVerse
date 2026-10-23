@@ -98,21 +98,38 @@ cp .env.example .env
 
 ## 🧪 Running Automated Tests
 
-Run the full test suite covering authentication, role-based access control, constraints, and model validations:
+Run the full test suite (49 automated tests) covering authentication, role isolation, constraints, event management lifecycle, and admin moderation:
 
 ```bash
 python manage.py test mujverse.tests
 ```
+
+*(For testing without a running MySQL instance, prepend `$env:DB_ENGINE="django.db.backends.sqlite3"` in PowerShell).*
 
 ### Test Coverage Highlights:
 - ✅ Automatic profile creation via `post_save` signal (default least-privileged `student` role).
 - ✅ Superuser creation auto-assignment of `admin` role.
 - ✅ Anti-privilege escalation: public registration strictly enforces student role and strips injected permissions.
 - ✅ Server-side authorization decorators (`@student_required`, `@organizer_required`, `@admin_required`) return HTTP 403 when violated.
+- ✅ Cross-organizer access protection: organizers cannot view, edit, submit, or delete events belonging to others.
 - ✅ Event scheduling validation: `end_datetime` must be after `start_datetime`, `registration_deadline` cannot exceed `start_datetime`.
+- ✅ Event lifecycle: Draft ➔ Pending ➔ Approved/Rejected ➔ Resubmission workflow.
+- ✅ Admin moderation: Rejection mandates documented reasons; approvals & rejections generate immutable `AuditLog` entries.
+- ✅ Public event discovery: Only approved and published events appear on the homepage and explore directory with live filtering and pagination.
 - ✅ Database constraints: Unique `(event, student)` registration and unique `ticket_token`.
 - ✅ Single-use attendance check-in: OneToOne link between `Registration` and `Attendance` prevents duplicate check-ins.
-- ✅ Tamper-resistant `AuditLog` records administrative operations immutably.
+
+---
+
+## 🎪 Seed Demonstration Data
+
+Populate the database with default MUJ event categories and realistic campus events (Technical, Cultural, Sports, Workshops, E-Summit, etc.):
+
+```bash
+python manage.py seed_data
+```
+
+This command is safe and idempotent.
 
 ---
 
@@ -123,3 +140,4 @@ python manage.py test mujverse.tests
 - **Interactive Highlight:** Cyan (`#06b6d4`, `#22d3ee`)
 - **Typography:** *Outfit* (headings) & *Inter* (body text)
 - **Framework:** Bootstrap 5.3 + Bootstrap Icons + Custom Vanilla CSS & JS
+
