@@ -180,5 +180,62 @@
       </div>
     </div>
   </div>
+
+  <!-- Attendee Reviews Section -->
+  <div class="row mt-5">
+    <div class="col-lg-8">
+      <div class="mv-card p-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom gap-2" style="border-color: var(--mv-border) !important;">
+          <div>
+            <h4 class="fw-bold text-white mb-1">
+              <i class="bi bi-chat-heart text-warning me-2"></i>Attendee Feedback & Reviews
+            </h4>
+            {% if avg_rating %}
+              <div class="d-flex align-items-center gap-2">
+                <span class="text-warning">
+                  <i class="bi bi-star-fill"></i>
+                </span>
+                <span class="fw-bold text-white">{{ avg_rating }} / 5.0</span>
+                <span class="small text-muted">({{ reviews|length }} verified review{{ reviews|length|pluralize }})</span>
+              </div>
+            {% else %}
+              <div class="small text-muted">No ratings submitted yet.</div>
+            {% endif %}
+          </div>
+
+          {% if can_review %}
+            <a href="{% url 'reviews:create_review' event_id=event.id %}" class="btn btn-mv-cyan">
+              <i class="bi bi-star-fill me-1 text-warning"></i> Write a Review
+            </a>
+          {% elif user_review %}
+            <span class="badge bg-dark border border-secondary p-2">
+              Your Review: <span class="text-warning">{{ user_review.rating }}★</span>
+            </span>
+          {% endif %}
+        </div>
+
+        {% for rev in reviews %}
+          <div class="p-3 mb-3 rounded-3" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--mv-border);">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <span class="fw-bold text-white">{{ rev.student.profile.display_name|default:rev.student.username }}</span>
+                <span class="badge bg-secondary ms-2 small">Verified Attendee</span>
+              </div>
+              <div class="text-warning small text-nowrap">
+                {% for _ in "x"|rjust:rev.rating %}<i class="bi bi-star-fill"></i>{% endfor %}
+              </div>
+            </div>
+            <p class="small text-muted mb-2">{{ rev.comment }}</p>
+            <div class="small text-dim">{{ rev.created_at|date:"M d, Y" }}</div>
+          </div>
+        {% empty %}
+          <div class="text-center py-4 text-muted">
+            <i class="bi bi-chat-square-quote fs-2 text-dim d-block mb-2"></i>
+            <p class="small mb-0">No reviews yet. Attendees can submit reviews once the event concludes.</p>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

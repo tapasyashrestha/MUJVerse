@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Leave a Review — {{ event.title }} — MUJVERSE{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+      <div class="mb-3">
+        <a href="{{ event.get_absolute_url }}" class="small text-muted text-decoration-none">
+          <i class="bi bi-arrow-left me-1"></i> Back to Event Page
+        </a>
+      </div>
+
+      <div class="mv-card p-4 p-md-5">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <span class="badge bg-dark border border-secondary">{{ event.category.name }}</span>
+          <span class="badge bg-info text-dark">Concluded Event</span>
+        </div>
+        <h2 class="h4 fw-bold text-white mb-1">{{ event.title }}</h2>
+        <p class="small text-muted mb-4">Share your feedback to help the organizer and other MUJ students.</p>
+
+        <form method="post">
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger py-2 small">
+              {{ form.non_field_errors }}
+            </div>
+          {% endif %}
+
+          <div class="mb-3">
+            <label class="form-label fw-bold text-white">{{ form.rating.label }}</label>
+            {{ form.rating }}
+            <div class="form-text text-dim">{{ form.rating.help_text }}</div>
+            {% if form.rating.errors %}
+              <div class="text-danger small mt-1">{{ form.rating.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold text-white">{{ form.comment.label }}</label>
+            {{ form.comment }}
+            <div class="form-text text-dim">{{ form.comment.help_text }}</div>
+            {% if form.comment.errors %}
+              <div class="text-danger small mt-1">{{ form.comment.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-mv-primary btn-lg">
+              <i class="bi bi-star-fill me-1 text-warning"></i> Submit Verified Review
+            </button>
+            <a href="{{ event.get_absolute_url }}" class="btn btn-mv-outline">
+              Cancel
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

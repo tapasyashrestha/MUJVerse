@@ -4,28 +4,46 @@
 
 {% block content %}
 <div class="container py-5">
-  <div class="mb-4">
-    <h1 class="h2 fw-bold mb-1">My Event Reviews</h1>
-    <p class="text-muted small mb-0">Feedback and ratings you've submitted for past campus events.</p>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <a href="{% url 'student:dashboard' %}" class="small text-muted text-decoration-none">
+        <i class="bi bi-arrow-left me-1"></i> Student Dashboard
+      </a>
+      <h1 class="h2 fw-bold mb-1 mt-1">My Event Reviews</h1>
+      <p class="text-muted small mb-0">Verified ratings and feedback you've shared for campus events.</p>
+    </div>
+    <a href="{% url 'public:explore' %}" class="btn btn-mv-primary btn-sm">Browse More Events</a>
   </div>
 
   <div class="mv-card p-4">
     {% for review in reviews %}
       <div class="p-3 mb-3 rounded-3" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--mv-border);">
         <div class="d-flex justify-content-between align-items-center mb-2">
-          <h5 class="fw-bold text-white mb-0">{{ review.event.title }}</h5>
+          <div>
+            <h5 class="fw-bold text-white mb-0">
+              <a href="{{ review.event.get_absolute_url }}" class="text-white text-decoration-none">{{ review.event.title }}</a>
+            </h5>
+            <span class="badge bg-dark border border-secondary small mt-1">{{ review.event.category.name }}</span>
+          </div>
           <div class="text-warning">
             {% for _ in "x"|rjust:review.rating %}<i class="bi bi-star-fill"></i>{% endfor %}
+            <span class="text-muted ms-1 small">({{ review.rating }}/5)</span>
           </div>
         </div>
         <p class="small text-muted mb-2">{{ review.comment }}</p>
-        <span class="text-dim small">Reviewed on {{ review.created_at|date:"M d, Y" }}</span>
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="text-dim small">Submitted on {{ review.created_at|date:"M d, Y" }}</span>
+          <a href="{{ review.event.get_absolute_url }}" class="small text-info text-decoration-none">
+            View Event <i class="bi bi-box-arrow-up-right ms-1"></i>
+          </a>
+        </div>
       </div>
     {% empty %}
       <div class="text-center text-muted py-5">
         <i class="bi bi-chat-square-quote fs-1 text-dim mb-3 d-block"></i>
         <h5>No Reviews Submitted Yet</h5>
-        <p class="small text-muted">You can leave reviews for events you've attended once they conclude.</p>
+        <p class="small text-muted mb-3">You can leave reviews for campus events you've attended once they conclude.</p>
+        <a href="{% url 'student:dashboard' %}" class="btn btn-mv-outline">Check Past Events</a>
       </div>
     {% endfor %}
   </div>

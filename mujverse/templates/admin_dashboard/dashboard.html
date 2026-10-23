@@ -93,9 +93,15 @@
                     </div>
                     <div class="small text-dim">Venue: {{ event.venue }} | Capacity: {{ event.capacity }}</div>
                   </div>
-                  <div class="d-flex gap-1">
-                    <a href="/admin/events/event/{{ event.id }}/change/" target="_blank" class="btn btn-sm btn-mv-primary">
-                      Review in Admin
+                  <div class="d-flex gap-1 align-items-center">
+                    <form method="post" action="{% url 'platform_admin:approve_event' pk=event.pk %}">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Approve event &quot;{{ event.title }}&quot;?');">
+                        <i class="bi bi-check-lg"></i> Approve
+                      </button>
+                    </form>
+                    <a href="{% url 'platform_admin:reject_event' pk=event.pk %}" class="btn btn-sm btn-outline-danger">
+                      <i class="bi bi-x-lg"></i> Reject
                     </a>
                   </div>
                 </div>

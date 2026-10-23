@@ -6,6 +6,7 @@ atomic check-in verification, duplicate prevention, and ownership authorization.
 
 import json
 from django.shortcuts import render, get_object_or_404
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
@@ -15,6 +16,8 @@ from django.utils import timezone
 from mujverse.apps.accounts.decorators import organizer_required
 from mujverse.apps.events.models import Event
 from mujverse.apps.registrations.models import Registration, RegistrationStatus
+from mujverse.apps.notifications.models import NotificationType
+from mujverse.apps.notifications.services import notify
 from .models import Attendance, CheckInMethod
 
 
@@ -183,6 +186,15 @@ def verify_checkin_api(request, event_id):
         student_profile.student_identifier
         if student_profile and student_profile.student_identifier
         else "N/A"
+    )
+
+    # In-app notification for student check-in
+    notify(
+        recipient=registration.student,
+        title="Check-in Confirmed",
+        message=f"Welcome to '{event.title}'! Your entry was successfully verified at {attendance.checked_in_at.strftime('%I:%M %p')}.",
+        notification_type=NotificationType.INFO,
+        target_url=reverse("student:ticket_detail", kwargs={"ticket_token": registration.ticket_token}),
     )
 
     return JsonResponse({

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Attendee Reviews — {{ event.title }} — MUJVERSE{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Navigation Header -->
+  <div class="mb-3 d-flex justify-content-between align-items-center">
+    <a href="{% url 'organizer:dashboard' %}" class="small text-muted text-decoration-none">
+      <i class="bi bi-arrow-left me-1"></i> Back to Organizer Dashboard
+    </a>
+    <div class="d-flex gap-2">
+      <a href="{% url 'organizer:event_attendees' pk=event.id %}" class="btn btn-sm btn-mv-outline">
+        <i class="bi bi-people me-1"></i> Attendees List
+      </a>
+      <a href="{{ event.get_absolute_url }}" class="btn btn-sm btn-mv-cyan">
+        <i class="bi bi-box-arrow-up-right me-1"></i> Public Event Page
+      </a>
+    </div>
+  </div>
+
+  <!-- Event Header -->
+  <div class="mv-card p-4 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <span class="badge bg-dark border border-secondary">{{ event.category.name }}</span>
+          <span class="badge badge-status-approved">{{ event.get_status_display }}</span>
+        </div>
+        <h1 class="h3 fw-bold text-white mb-1">{{ event.title }}</h1>
+        <div class="small text-muted">
+          <i class="bi bi-calendar3 me-1 text-info"></i> {{ event.start_datetime|date:"l, M d, Y" }} &bull;
+          <i class="bi bi-geo-alt me-1 text-danger ms-2"></i> {{ event.venue }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ratings Summary Row -->
+  <div class="row g-3 mb-4">
+    <div class="col-lg-4 col-sm-6">
+      <div class="stat-card text-center">
+        <div class="stat-value text-warning">{{ avg_rating }} <span class="fs-5 text-muted">/ 5.0</span></div>
+        <div class="stat-label">Average Attendee Rating</div>
+        <div class="small text-muted mt-2">
+          Based on <strong>{{ total_reviews }}</strong> verified review{{ total_reviews|pluralize }}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-8 col-sm-6">
+      <div class="mv-card p-3 h-100 d-flex flex-column justify-content-center">
+        <div class="small fw-bold text-white mb-2">Rating Distribution:</div>
+        {% for star, count in rating_counts.items %}
+          <div class="d-flex align-items-center gap-2 mb-1 small">
+            <span class="text-warning text-nowrap" style="width: 60px;">{{ star }} ★</span>
+            <div class="progress flex-grow-1" style="height: 6px; background: rgba(255, 255, 255, 0.08);">
+              <div class="progress-bar bg-warning" role="progressbar"
+                   style="width: {% if total_reviews %}{% widthratio count total_reviews 100 %}{% else %}0{% endif %}%;"></div>
+            </div>
+            <span class="text-muted text-end" style="width: 30px;">{{ count }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Reviews Feed -->
+  <div class="mv-card p-4">
+    <h5 class="fw-bold text-white mb-3">Attendee Feedback ({{ total_reviews }})</h5>
+
+    {% for review in reviews %}
+      <div class="p-3 mb-3 rounded-3" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--mv-border);">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <span class="fw-bold text-white">{{ review.student.profile.display_name|default:review.student.username }}</span>
+            <span class="small text-dim ms-2 font-monospace">{{ review.student.profile.student_identifier|default:"" }}</span>
+          </div>
+          <div class="text-warning small">
+            {% for _ in "x"|rjust:review.rating %}<i class="bi bi-star-fill"></i>{% endfor %}
+            <span class="text-muted ms-1">({{ review.rating }}/5)</span>
+          </div>
+        </div>
+        <p class="small text-muted mb-2">{{ review.comment }}</p>
+        <span class="text-dim small">{{ review.created_at|date:"M d, Y h:i A" }}</span>
+      </div>
+    {% empty %}
+      <div class="text-center text-muted py-5">
+        <i class="bi bi-chat-heart fs-1 text-dim mb-3 d-block"></i>
+        <h6>No Reviews Submitted Yet</h6>
+        <p class="small text-muted mb-0">Attendees can submit feedback once the event concludes.</p>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

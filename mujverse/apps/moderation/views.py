@@ -11,8 +11,13 @@ from mujverse.apps.events.views import (
     approve_event_view,
     reject_event_view,
     users_list_view,
+    toggle_user_status_view,
     categories_admin_view,
+    category_create_view,
+    category_toggle_active_view,
     reports_admin_view,
+    resolve_report_view,
+    dismiss_report_view,
 )
 
 __all__ = [
@@ -21,6 +26,11 @@ __all__ = [
     "approve_event_view",
     "reject_event_view",
     "users_list_view",
+    "toggle_user_status_view",
     "categories_admin_view",
+    "category_create_view",
+    "category_toggle_active_view",
     "reports_admin_view",
+    "resolve_report_view",
+    "dismiss_report_view",
 ]

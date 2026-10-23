@@ -7,6 +7,7 @@ ticket pass inspection, cancellation, and student metrics.
 import io
 import qrcode
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib import messages
@@ -16,13 +17,15 @@ from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from mujverse.apps.accounts.decorators import student_required
 from mujverse.apps.events.models import Event, EventStatus
+from mujverse.apps.notifications.models import NotificationType
+from mujverse.apps.notifications.services import notify
 from .models import Registration, RegistrationStatus, generate_ticket_token
 
 
 @login_required
 def student_dashboard_view(request):
     """
-    Student dashboard displaying real upcoming registrations, past events, and ticket access.
+    Student dashboard displaying real upcoming registrations, past events, review eligibility, and ticket access.
     """
     user = request.user
     now = timezone.now()
@@ -33,11 +36,21 @@ def student_dashboard_view(request):
     ).select_related("event", "event__category").order_by("event__start_datetime")
 
     upcoming = my_registrations.filter(event__end_datetime__gte=now)
-    past = my_registrations.filter(event__end_datetime__lt=now)
+    past_list = list(my_registrations.filter(event__end_datetime__lt=now))
+
+    # Review eligibility for completed events
+    from mujverse.apps.reviews.models import Review
+    existing_reviews = {
+        rev.event_id: rev
+        for rev in Review.objects.filter(student=user, event__in=[p.event for p in past_list])
+    }
+    for p in past_list:
+        p.review = existing_reviews.get(p.event_id)
+        p.can_review = p.review is None and p.is_confirmed and now > p.event.end_datetime
 
     context = {
         "upcoming_registrations": upcoming,
-        "past_registrations": past,
+        "past_registrations": past_list,
         "total_registered": my_registrations.count(),
         "total_attended": Registration.objects.filter(student=user, attendance__isnull=False).count(),
     }
@@ -132,6 +145,23 @@ def event_register_view(request, event_id):
                 student=user,
                 status=RegistrationStatus.CONFIRMED,
             )
+
+    # In-app notifications for registration confirmation
+    notify(
+        recipient=user,
+        title="Registration Confirmed",
+        message=f"You are registered for '{event.title}'. Your free QR ticket pass is ready.",
+        notification_type=NotificationType.REGISTRATION,
+        target_url=reverse("student:ticket_detail", kwargs={"ticket_token": registration.ticket_token}),
+        send_email=True,
+    )
+    notify(
+        recipient=event.organizer,
+        title="New Event Registration",
+        message=f"{getattr(user, 'profile', None) and user.profile.display_name or user.username} registered for '{event.title}'.",
+        notification_type=NotificationType.INFO,
+        target_url=reverse("organizer:event_attendees", kwargs={"pk": event.id}),
+    )
 
     messages.success(request, f"Registration confirmed! Your free ticket pass for '{event.title}' is ready.")
     return redirect("student:ticket_detail", ticket_token=registration.ticket_token)
@@ -234,6 +264,22 @@ def ticket_cancel_view(request, ticket_token):
         return redirect("student:ticket_detail", ticket_token=registration.ticket_token)
 
     registration.cancel()
+
+    # In-app notifications for registration cancellation
+    notify(
+        recipient=user,
+        title="Registration Cancelled",
+        message=f"Your pass for '{registration.event.title}' was successfully cancelled. Your seat was released.",
+        notification_type=NotificationType.CANCELLATION,
+    )
+    notify(
+        recipient=registration.event.organizer,
+        title="Registration Cancelled",
+        message=f"A student cancelled their registration for '{registration.event.title}'. 1 seat released.",
+        notification_type=NotificationType.INFO,
+        target_url=reverse("organizer:event_attendees", kwargs={"pk": registration.event.id}),
+    )
+
     messages.success(
         request,
         f"Your registration for '{registration.event.title}' has been successfully cancelled. Your seat has been released."

@@ -6,18 +6,23 @@ and administrator moderation approval / rejection with AuditLog.
 
 import csv
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Q
+from django.urls import reverse
+from django.db.models import Q, Avg
 from django.utils import timezone
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.utils.text import slugify
 
 from mujverse.apps.accounts.decorators import organizer_required, admin_required
 from mujverse.apps.moderation.models import AuditLog
 from mujverse.apps.registrations.models import Registration
+from mujverse.apps.attendance.models import Attendance
+from mujverse.apps.notifications.models import NotificationType
+from mujverse.apps.notifications.services import notify
 from .forms import EventForm, EventRejectForm
 from .models import Category, Event, EventStatus
 
@@ -160,10 +165,30 @@ def event_detail_view(request, slug):
                 status="cancelled",
             ).first()
 
+    from mujverse.apps.reviews.models import Review
+    from mujverse.apps.reviews.views import can_user_review_event
+
+    reviews = (
+        Review.objects.filter(event=event, is_visible=True)
+        .select_related("student", "student__profile")
+        .order_by("-created_at")[:10]
+    )
+    avg_rating = Review.objects.filter(event=event, is_visible=True).aggregate(Avg("rating"))["rating__avg"]
+    can_review, _ = can_user_review_event(request.user, event) if request.user.is_authenticated else (False, "")
+    user_review = (
+        Review.objects.filter(event=event, student=request.user).first()
+        if request.user.is_authenticated
+        else None
+    )
+
     context = {
         "event": event,
         "user_registration": user_registration,
         "user_cancelled_registration": user_cancelled_registration,
+        "reviews": reviews,
+        "avg_rating": round(avg_rating, 1) if avg_rating else None,
+        "can_review": can_review,
+        "user_review": user_review,
     }
     return render(request, "public/event_detail.html", context)
 
@@ -189,7 +214,8 @@ def help_view(request):
 @organizer_required
 def organizer_dashboard_view(request):
     """
-    Organizer dashboard — own events list with state, registration totals, and pending count.
+    Organizer dashboard — real database metrics, chart data, own events list with state,
+    attendance totals, and attendee feedback.
     """
     user = request.user
     my_events = Event.objects.filter(organizer=user).select_related("category").order_by("-created_at")
@@ -204,6 +230,30 @@ def organizer_dashboard_view(request):
         status="confirmed",
     ).count()
 
+    total_attendance = Attendance.objects.filter(
+        registration__event__organizer=user
+    ).count()
+
+    overall_attendance_rate = (
+        round((total_attendance / total_registrations) * 100, 1)
+        if total_registrations > 0
+        else 0.0
+    )
+
+    # Database-backed Chart.js series for organizer's top active events
+    chart_events = list(my_events.filter(status__in=[EventStatus.APPROVED, EventStatus.COMPLETED])[:6])
+    chart_labels = [e.title[:18] + ("…" if len(e.title) > 18 else "") for e in chart_events]
+    chart_registrations = [e.confirmed_registrations_count for e in chart_events]
+    chart_capacities = [e.capacity for e in chart_events]
+    chart_attendances = [e.attendance_count for e in chart_events]
+
+    from mujverse.apps.reviews.models import Review
+    recent_reviews = (
+        Review.objects.filter(event__organizer=user)
+        .select_related("event", "student", "student__profile")
+        .order_by("-created_at")[:5]
+    )
+
     context = {
         "events": my_events[:20],
         "total_events": total_events,
@@ -211,6 +261,13 @@ def organizer_dashboard_view(request):
         "pending_events": pending_events,
         "rejected_events": rejected_events,
         "total_registrations": total_registrations,
+        "total_attendance": total_attendance,
+        "overall_attendance_rate": overall_attendance_rate,
+        "chart_labels": chart_labels,
+        "chart_registrations": chart_registrations,
+        "chart_capacities": chart_capacities,
+        "chart_attendances": chart_attendances,
+        "recent_reviews": recent_reviews,
     }
     return render(request, "organizer/dashboard.html", context)
 
@@ -295,6 +352,15 @@ def _submit_event_for_approval(request, event):
     event.status = EventStatus.PENDING_APPROVAL
     event.rejection_reason = ""
     event.save(update_fields=["status", "rejection_reason"])
+
+    notify(
+        recipient=event.organizer,
+        title="Event Submitted",
+        message=f"'{event.title}' was submitted for administrative review. You will receive an alert upon approval.",
+        notification_type=NotificationType.INFO,
+        target_url=reverse("organizer:dashboard"),
+    )
+
     messages.success(
         request,
         f'"{event.title}" has been submitted for administrator approval. '
@@ -419,6 +485,15 @@ def approve_event_view(request, pk):
             },
         )
 
+        notify(
+            recipient=event.organizer,
+            title="Event Approved!",
+            message=f"Congratulations! Your event '{event.title}' has been approved and is now live on MUJVERSE.",
+            notification_type=NotificationType.APPROVAL,
+            target_url=event.get_absolute_url(),
+            send_email=True,
+        )
+
         messages.success(
             request,
             f'"{event.title}" has been approved and is now publicly visible.',
@@ -459,6 +534,15 @@ def reject_event_view(request, pk):
                 },
             )
 
+            notify(
+                recipient=event.organizer,
+                title="Event Changes Requested",
+                message=f"Your event '{event.title}' was reviewed and requires revision: {reason}",
+                notification_type=NotificationType.REJECTION,
+                target_url=reverse("organizer:event_edit", kwargs={"pk": event.pk}),
+                send_email=True,
+            )
+
             messages.warning(
                 request,
                 f'"{event.title}" has been rejected. The organizer has been notified.',
@@ -475,27 +559,182 @@ def reject_event_view(request, pk):
 
 @admin_required
 def users_list_view(request):
-    """User management view for administrators."""
+    """User management view for administrators with search and role filters."""
     from django.contrib.auth.models import User
-    users = User.objects.select_related("profile").order_by("-date_joined")[:50]
-    return render(request, "admin_dashboard/users.html", {"users_list": users})
+    users = User.objects.select_related("profile").order_by("-date_joined")
+
+    query = request.GET.get("q", "").strip()
+    role_filter = request.GET.get("role", "").strip()
+
+    if query:
+        users = users.filter(
+            Q(username__icontains=query)
+            | Q(email__icontains=query)
+            | Q(profile__display_name__icontains=query)
+            | Q(profile__student_identifier__icontains=query)
+        )
+
+    if role_filter in ["student", "organizer", "admin"]:
+        users = users.filter(profile__role=role_filter)
+
+    return render(request, "admin_dashboard/users.html", {
+        "users_list": users[:100],
+        "query": query,
+        "role_filter": role_filter,
+        "total_count": users.count(),
+    })
+
+
+@admin_required
+@require_POST
+def toggle_user_status_view(request, user_id):
+    """
+    Administrator action to suspend or reactivate a user account.
+    Prevents self-suspension and unauthorized superuser alteration.
+    Logs action to AuditLog.
+    """
+    from django.contrib.auth.models import User
+    target_user = get_object_or_404(User, id=user_id)
+
+    if target_user.id == request.user.id:
+        messages.error(request, "Security constraint: You cannot suspend your own account.")
+        return redirect("platform_admin:users")
+
+    if target_user.is_superuser and not request.user.is_superuser:
+        messages.error(request, "Permission denied: Only superusers can modify other superusers.")
+        return redirect("platform_admin:users")
+
+    target_user.is_active = not target_user.is_active
+    target_user.save(update_fields=["is_active"])
+
+    action_str = "user_reactivated" if target_user.is_active else "user_suspended"
+    AuditLog.log(
+        actor=request.user,
+        action=action_str,
+        object_type="User",
+        object_id=target_user.id,
+        metadata={"username": target_user.username, "new_active_status": target_user.is_active},
+    )
+
+    state = "reactivated" if target_user.is_active else "suspended"
+    messages.success(request, f"User account '{target_user.username}' has been {state}.")
+    return redirect("platform_admin:users")
 
 
 @admin_required
 def categories_admin_view(request):
-    """Category management view."""
+    """Category management view with event counts and active toggle."""
     categories = Category.objects.all().order_by("name")
     return render(request, "admin_dashboard/categories.html", {"categories": categories})
 
 
 @admin_required
+@require_POST
+def category_create_view(request):
+    """Creates a new event category and logs audit record."""
+    name = request.POST.get("name", "").strip()
+    icon = request.POST.get("icon", "bi-calendar-event").strip()
+
+    if not name:
+        messages.error(request, "Category name is required.")
+        return redirect("platform_admin:categories")
+
+    category = Category.objects.create(name=name, icon=icon or "bi-calendar-event", is_active=True)
+    AuditLog.log(
+        actor=request.user,
+        action="category_created",
+        object_type="Category",
+        object_id=category.id,
+        metadata={"name": category.name, "slug": category.slug},
+    )
+    messages.success(request, f"Category '{category.name}' created successfully.")
+    return redirect("platform_admin:categories")
+
+
+@admin_required
+@require_POST
+def category_toggle_active_view(request, category_id):
+    """Toggles active/inactive status of a category."""
+    category = get_object_or_404(Category, id=category_id)
+    category.is_active = not category.is_active
+    category.save(update_fields=["is_active"])
+
+    AuditLog.log(
+        actor=request.user,
+        action="category_updated",
+        object_type="Category",
+        object_id=category.id,
+        metadata={"name": category.name, "is_active": category.is_active},
+    )
+    status_str = "activated" if category.is_active else "deactivated"
+    messages.success(request, f"Category '{category.name}' has been {status_str}.")
+    return redirect("platform_admin:categories")
+
+
+@admin_required
 def reports_admin_view(request):
-    """Content reports moderation queue."""
+    """Content reports moderation queue with status filter."""
     from mujverse.apps.moderation.models import EventReport
     reports = EventReport.objects.select_related(
         "reported_by", "event", "reported_user"
     ).order_by("-created_at")
-    return render(request, "admin_dashboard/reports.html", {"reports": reports})
+
+    status_filter = request.GET.get("status", "open").strip()
+    if status_filter != "all":
+        reports = reports.filter(status=status_filter)
+
+    return render(request, "admin_dashboard/reports.html", {
+        "reports": reports,
+        "status_filter": status_filter,
+    })
+
+
+@admin_required
+@require_POST
+def resolve_report_view(request, report_id):
+    """Resolves an open report and logs audit trail."""
+    from mujverse.apps.moderation.models import EventReport, ReportStatus
+    report = get_object_or_404(EventReport, id=report_id)
+    notes = request.POST.get("notes", "").strip() or "Resolved by administrator."
+
+    report.status = ReportStatus.RESOLVED
+    report.reviewed_by = request.user
+    report.resolution_notes = notes
+    report.save(update_fields=["status", "reviewed_by", "resolution_notes", "updated_at"])
+
+    AuditLog.log(
+        actor=request.user,
+        action="report_resolved",
+        object_type="EventReport",
+        object_id=report.id,
+        metadata={"resolution_notes": notes},
+    )
+    messages.success(request, f"Report #{report.id} marked as resolved.")
+    return redirect("platform_admin:reports")
+
+
+@admin_required
+@require_POST
+def dismiss_report_view(request, report_id):
+    """Dismisses a report and logs audit trail."""
+    from mujverse.apps.moderation.models import EventReport, ReportStatus
+    report = get_object_or_404(EventReport, id=report_id)
+    notes = request.POST.get("notes", "").strip() or "Dismissed by administrator."
+
+    report.status = ReportStatus.DISMISSED
+    report.reviewed_by = request.user
+    report.resolution_notes = notes
+    report.save(update_fields=["status", "reviewed_by", "resolution_notes", "updated_at"])
+
+    AuditLog.log(
+        actor=request.user,
+        action="report_dismissed",
+        object_type="EventReport",
+        object_id=report.id,
+        metadata={"resolution_notes": notes},
+    )
+    messages.info(request, f"Report #{report.id} dismissed.")
+    return redirect("platform_admin:reports")
 
 
 # ─── Attendee Management & CSV Export (Phase 3) ────────────────────────────────

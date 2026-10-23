@@ -4,35 +4,60 @@
 
 {% block content %}
 <div class="container py-5">
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
     <div>
-      <a href="{% url 'platform_admin:dashboard' %}" class="small text-muted">&larr; Admin Dashboard</a>
-      <h1 class="h2 fw-bold mb-0 mt-1">User Directory</h1>
+      <a href="{% url 'platform_admin:dashboard' %}" class="small text-muted text-decoration-none">
+        <i class="bi bi-arrow-left me-1"></i> Admin Dashboard
+      </a>
+      <h1 class="h2 fw-bold mb-0 mt-1">User Directory & Account Controls</h1>
     </div>
-    <a href="/admin/auth/user/" target="_blank" class="btn btn-sm btn-outline-warning">
-      <i class="bi bi-person-gear me-1"></i> Manage in Django Admin
-    </a>
+    <span class="badge bg-dark border border-secondary p-2">Total Accounts: {{ total_count }}</span>
   </div>
 
+  <!-- Search and Role Filter -->
+  <div class="mv-card p-3 mb-4">
+    <form method="get" class="row g-2 align-items-center">
+      <div class="col-md-7 col-12">
+        <div class="input-group">
+          <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
+          <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search by username, email, full name, or student roll number...">
+        </div>
+      </div>
+      <div class="col-md-3 col-8">
+        <select name="role" class="form-select" onchange="this.form.submit()">
+          <option value="">All Roles</option>
+          <option value="student" {% if role_filter == 'student' %}selected{% endif %}>Students</option>
+          <option value="organizer" {% if role_filter == 'organizer' %}selected{% endif %}>Organizers</option>
+          <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Admins</option>
+        </select>
+      </div>
+      <div class="col-md-2 col-4 d-grid">
+        <button type="submit" class="btn btn-mv-cyan">Filter</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Users Table -->
   <div class="mv-card p-4">
     <div class="table-responsive">
       <table class="table table-dark table-hover mb-0 align-middle">
         <thead>
           <tr class="text-muted small">
-            <th>Username</th>
-            <th>Email</th>
+            <th>User</th>
             <th>Role</th>
             <th>Student ID</th>
-            <th>Department</th>
+            <th>Account Status</th>
             <th>Joined</th>
-            <th>Staff?</th>
+            <th class="text-end">Administrative Action</th>
           </tr>
         </thead>
         <tbody>
           {% for u in users_list %}
             <tr>
-              <td class="fw-bold text-white">{{ u.username }}</td>
-              <td class="small text-muted">{{ u.email }}</td>
+              <td>
+                <span class="fw-bold text-white">{{ u.profile.display_name|default:u.username }}</span>
+                <div class="small text-muted font-monospace">{{ u.email }}</div>
+              </td>
               <td>
                 {% if u.profile.role == 'admin' or u.is_superuser %}
                   <span class="badge badge-role-admin">Admin</span>
@@ -42,11 +67,44 @@
                   <span class="badge badge-role-student">Student</span>
                 {% endif %}
               </td>
-              <td class="small font-monospace">{{ u.profile.student_identifier|default:"-" }}</td>
-              <td class="small text-dim">{{ u.profile.department|default:"-" }}</td>
-              <td class="small text-dim">{{ u.date_joined|date:"M d, Y" }}</td>
+              <td class="small font-monospace text-info">
+                {{ u.profile.student_identifier|default:"—" }}
+              </td>
               <td>
-                {% if u.is_staff %}<i class="bi bi-check-circle-fill text-success"></i>{% else %}<i class="bi bi-dash text-muted"></i>{% endif %}
+                {% if u.is_active %}
+                  <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Active</span>
+                {% else %}
+                  <span class="badge bg-danger"><i class="bi bi-slash-circle me-1"></i> Suspended</span>
+                {% endif %}
+              </td>
+              <td class="small text-dim">{{ u.date_joined|date:"M d, Y" }}</td>
+              <td class="text-end">
+                {% if u.id == request.user.id %}
+                  <span class="badge bg-secondary">Current User</span>
+                {% elif u.is_superuser and not request.user.is_superuser %}
+                  <span class="badge bg-secondary">Superuser</span>
+                {% else %}
+                  <form method="post" action="{% url 'platform_admin:toggle_user_status' user_id=u.id %}" class="d-inline"
+                        onsubmit="return confirm('Are you sure you want to {% if u.is_active %}suspend{% else %}reactivate{% endif %} user {{ u.username }}?');">
+                    {% csrf_token %}
+                    {% if u.is_active %}
+                      <button type="submit" class="btn btn-sm btn-outline-danger" title="Suspend Account">
+                        <i class="bi bi-person-x me-1"></i> Suspend
+                      </button>
+                    {% else %}
+                      <button type="submit" class="btn btn-sm btn-outline-success" title="Reactivate Account">
+                        <i class="bi bi-person-check me-1"></i> Reactivate
+                      </button>
+                    {% endif %}
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6" class="text-center text-muted py-5">
+                <i class="bi bi-people fs-2 mb-2 d-block text-dim"></i>
+                No matching users found.
               </td>
             </tr>
           {% endfor %}

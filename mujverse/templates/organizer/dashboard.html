@@ -2,6 +2,11 @@
 
 {% block title %}Organizer Portal — MUJVERSE{% endblock %}
 
+{% block extra_head %}
+<!-- Chart.js for real database-backed visualizations -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% endblock %}
+
 {% block content %}
 <div class="container py-5">
   <!-- Header -->
@@ -11,54 +16,88 @@
         <h1 class="h2 fw-bold mb-0">Organizer Portal</h1>
         <span class="badge badge-role-organizer">Organizer</span>
       </div>
-      <p class="text-muted small mb-0">Manage club events, monitor real attendee registrations, and verify tickets.</p>
+      <p class="text-muted small mb-0">Manage your events, monitor registrations, inspect attendee reviews, and check in students.</p>
     </div>
     <div class="mt-3 mt-md-0 d-flex gap-2">
-      <a href="{% url 'public:explore' %}" class="btn btn-mv-outline">
-        <i class="bi bi-eye me-1"></i> Public Catalog
-      </a>
       <a href="{% url 'organizer:event_create' %}" class="btn btn-mv-primary">
         <i class="bi bi-plus-circle me-1"></i> Create New Event
       </a>
     </div>
   </div>
 
-  <!-- Real Statistics Row (no fake stats) -->
+  <!-- Real Statistics Row -->
   <div class="row g-3 mb-4">
-    <div class="col-md-3 col-6">
+    <div class="col-lg-2 col-md-4 col-6">
       <div class="stat-card">
         <div class="stat-value text-white">{{ total_events }}</div>
         <div class="stat-label">Total Events</div>
       </div>
     </div>
-    <div class="col-md-3 col-6">
+    <div class="col-lg-2 col-md-4 col-6">
       <div class="stat-card">
         <div class="stat-value text-success">{{ approved_events }}</div>
         <div class="stat-label">Approved & Active</div>
       </div>
     </div>
-    <div class="col-md-3 col-6">
+    <div class="col-lg-2 col-md-4 col-6">
       <div class="stat-card">
         <div class="stat-value text-warning">{{ pending_events }}</div>
-        <div class="stat-label">Pending Approval</div>
+        <div class="stat-label">Pending Review</div>
       </div>
     </div>
-    <div class="col-md-3 col-6">
-      <div class="stat-card">
-        <div class="stat-value text-danger">{{ rejected_events }}</div>
-        <div class="stat-label">Rejected</div>
-      </div>
-    </div>
-    <div class="col-md-3 col-6">
+    <div class="col-lg-2 col-md-4 col-6">
       <div class="stat-card">
         <div class="stat-value text-info">{{ total_registrations }}</div>
-        <div class="stat-label">Total Registrations</div>
+        <div class="stat-label">Passes Claimed</div>
+      </div>
+    </div>
+    <div class="col-lg-2 col-md-4 col-6">
+      <div class="stat-card">
+        <div class="stat-value text-success">{{ total_attendance }}</div>
+        <div class="stat-label">Verified Check-ins</div>
+      </div>
+    </div>
+    <div class="col-lg-2 col-md-4 col-6">
+      <div class="stat-card">
+        <div class="stat-value" style="color: #a78bfa;">{{ overall_attendance_rate }}%</div>
+        <div class="stat-label">Overall Turnout</div>
       </div>
     </div>
   </div>
 
+  <!-- Chart.js Real Data Visualizations -->
+  {% if chart_labels %}
+    <div class="row g-4 mb-4">
+      <div class="col-lg-8 col-12">
+        <div class="mv-card p-4 h-100">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold text-white mb-0">
+              <i class="bi bi-bar-chart-fill text-info me-2"></i>Registration Fill Rate vs Capacity
+            </h5>
+            <span class="badge bg-dark border border-secondary small">Real Database Series</span>
+          </div>
+          <div style="height: 240px; position: relative;">
+            <canvas id="capacityChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-12">
+        <div class="mv-card p-4 h-100">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold text-white mb-0">
+              <i class="bi bi-pie-chart-fill text-warning me-2"></i>Event Status Ratio
+            </h5>
+          </div>
+          <div style="height: 240px; position: relative;">
+            <canvas id="statusChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
   <!-- Organizer Events Table -->
-  <div class="mv-card p-4">
+  <div class="mv-card p-4 mb-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h4 class="h5 fw-bold mb-0">My Organized Events</h4>
       <span class="small text-muted">{{ events.count }} recent event{{ events.count|pluralize }}</span>
@@ -71,10 +110,10 @@
             <th>Title</th>
             <th>Category</th>
             <th>Date</th>
-            <th>Registrations</th>
+            <th>Seats / Registrations</th>
             <th>Status</th>
             <th>Public?</th>
-            <th>Actions</th>
+            <th class="text-end">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -92,7 +131,14 @@
               <td><span class="badge bg-dark border border-secondary">{{ ev.category.name }}</span></td>
               <td class="small text-muted">{{ ev.start_datetime|date:"M d, Y" }}</td>
               <td>
-                <span class="small">{{ ev.confirmed_registrations_count }} / {{ ev.capacity }}</span>
+                <div class="d-flex justify-content-between small mb-1">
+                  <span class="text-white">{{ ev.confirmed_registrations_count }} / {{ ev.capacity }}</span>
+                  <span class="text-dim">{{ ev.remaining_seats }} left</span>
+                </div>
+                <div class="progress" style="height: 5px; background: rgba(255, 255, 255, 0.08);">
+                  <div class="progress-bar bg-info" role="progressbar"
+                       style="width: {% if ev.capacity %}{% widthratio ev.confirmed_registrations_count ev.capacity 100 %}{% else %}0{% endif %}%;"></div>
+                </div>
               </td>
               <td>
                 {% if ev.status == 'approved' %}
@@ -114,13 +160,14 @@
                   <i class="bi bi-dash-circle text-muted" title="Not Published"></i>
                 {% endif %}
               </td>
-              <td>
-                <div class="d-flex gap-1 flex-wrap">
-                  <a href="{{ ev.get_absolute_url }}" class="btn btn-sm btn-mv-outline" title="View">
+              <td class="text-end">
+                <div class="d-flex gap-1 justify-content-end flex-wrap">
+                  <a href="{{ ev.get_absolute_url }}" class="btn btn-sm btn-mv-outline" title="View Public Page">
                     <i class="bi bi-eye"></i>
                   </a>
+
                   {% if ev.status == 'draft' or ev.status == 'rejected' %}
-                    <a href="{% url 'organizer:event_edit' pk=ev.pk %}" class="btn btn-sm btn-mv-cyan" title="Edit">
+                    <a href="{% url 'organizer:event_edit' pk=ev.pk %}" class="btn btn-sm btn-mv-cyan" title="Edit Event">
                       <i class="bi bi-pencil"></i>
                     </a>
                     <form method="post" action="{% url 'organizer:event_submit' pk=ev.pk %}" class="d-inline">
@@ -138,14 +185,19 @@
                       </button>
                     </form>
                   {% endif %}
+
                   {% if ev.status == 'approved' %}
-                    <a href="{% url 'attendance:scanner' event_id=ev.id %}" class="btn btn-sm btn-mv-cyan" title="QR Scanner">
+                    <a href="{% url 'attendance:scanner' event_id=ev.id %}" class="btn btn-sm btn-mv-cyan" title="QR Check-in Scanner">
                       <i class="bi bi-qr-code-scan"></i>
                     </a>
                   {% endif %}
+
                   {% if ev.status == 'approved' or ev.confirmed_registrations_count > 0 %}
-                    <a href="{% url 'organizer:event_attendees' pk=ev.pk %}" class="btn btn-sm btn-mv-outline" title="Attendees & Export">
+                    <a href="{% url 'organizer:event_attendees' pk=ev.pk %}" class="btn btn-sm btn-mv-outline" title="Attendees & CSV Export">
                       <i class="bi bi-people"></i>
+                    </a>
+                    <a href="{% url 'organizer:event_reviews' pk=ev.pk %}" class="btn btn-sm btn-outline-warning" title="Attendee Reviews">
+                      <i class="bi bi-star"></i>
                     </a>
                   {% endif %}
                 </div>
@@ -155,7 +207,7 @@
             <tr>
               <td colspan="7" class="text-center text-muted py-5">
                 <i class="bi bi-calendar-plus fs-2 mb-2 d-block text-dim"></i>
-                No events yet. <a href="{% url 'organizer:event_create' %}" class="text-mv-cyan">Create your first event</a>.
+                No events yet. <a href="{% url 'organizer:event_create' %}" class="text-info">Create your first campus event</a>.
               </td>
             </tr>
           {% endfor %}
@@ -163,5 +215,122 @@
       </table>
     </div>
   </div>
+
+  <!-- Recent Attendee Reviews Feed -->
+  {% if recent_reviews %}
+    <div class="mv-card p-4">
+      <h5 class="fw-bold text-white mb-3 d-flex align-items-center">
+        <i class="bi bi-chat-heart text-warning me-2"></i>Latest Attendee Reviews Across Your Events
+      </h5>
+
+      <div class="row g-3">
+        {% for rev in recent_reviews %}
+          <div class="col-md-6 col-12">
+            <div class="p-3 rounded-3 h-100" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--mv-border);">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <span class="fw-bold text-white">{{ rev.event.title }}</span>
+                  <div class="small text-muted">{{ rev.student.profile.display_name|default:rev.student.username }}</div>
+                </div>
+                <div class="text-warning small text-nowrap">
+                  {% for _ in "x"|rjust:rev.rating %}<i class="bi bi-star-fill"></i>{% endfor %}
+                </div>
+              </div>
+              <p class="small text-dim mb-2">{{ rev.comment|truncatewords:20 }}</p>
+              <div class="small text-muted text-end">{{ rev.created_at|date:"M d, Y" }}</div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
 </div>
+
+{% if chart_labels %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const labels = {{ chart_labels|safe }};
+  const registrations = {{ chart_registrations|safe }};
+  const capacities = {{ chart_capacities|safe }};
+
+  // 1. Capacity vs Registrations Bar Chart
+  const ctxCapacity = document.getElementById("capacityChart").getContext("2d");
+  new Chart(ctxCapacity, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: "Confirmed Passes",
+          data: registrations,
+          backgroundColor: "rgba(6, 182, 212, 0.75)",
+          borderColor: "#06b6d4",
+          borderWidth: 1,
+          borderRadius: 6,
+        },
+        {
+          label: "Total Capacity",
+          data: capacities,
+          backgroundColor: "rgba(124, 58, 237, 0.35)",
+          borderColor: "#7c3aed",
+          borderWidth: 1,
+          borderRadius: 6,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          ticks: { color: "#9ca3af", font: { size: 11 } },
+          grid: { display: false },
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { color: "#9ca3af", font: { size: 11 } },
+          grid: { color: "rgba(255, 255, 255, 0.05)" },
+        },
+      },
+      plugins: {
+        legend: {
+          labels: { color: "#e5e7eb", boxWidth: 12 },
+        },
+      },
+    },
+  });
+
+  // 2. Status Ratio Doughnut Chart
+  const ctxStatus = document.getElementById("statusChart").getContext("2d");
+  new Chart(ctxStatus, {
+    type: "doughnut",
+    data: {
+      labels: ["Approved", "Pending", "Draft", "Rejected"],
+      datasets: [
+        {
+          data: [{{ approved_events }}, {{ pending_events }}, {{ total_events }} - ({{ approved_events }} + {{ pending_events }} + {{ rejected_events }}), {{ rejected_events }}],
+          backgroundColor: [
+            "#10b981",
+            "#f59e0b",
+            "#6b7280",
+            "#ef4444",
+          ],
+          borderWidth: 0,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: { color: "#e5e7eb", boxWidth: 12, padding: 12 },
+        },
+      },
+    },
+  });
+});
+</script>
+{% endif %}
 {% endblock %}

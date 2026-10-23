@@ -1,13 +1,31 @@
 {% extends "base.html" %}
 
-{% block title %}Content Reports — MUJVERSE Admin{% endblock %}
+{% block title %}Content Reports Moderation — MUJVERSE Admin{% endblock %}
 
 {% block content %}
 <div class="container py-5">
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
     <div>
-      <a href="{% url 'platform_admin:dashboard' %}" class="small text-muted">&larr; Admin Dashboard</a>
+      <a href="{% url 'platform_admin:dashboard' %}" class="small text-muted text-decoration-none">
+        <i class="bi bi-arrow-left me-1"></i> Admin Dashboard
+      </a>
       <h1 class="h2 fw-bold mb-0 mt-1">Content Reports Moderation</h1>
+    </div>
+
+    <!-- Filter Pills -->
+    <div class="d-flex gap-2">
+      <a href="?status=open" class="btn btn-sm {% if status_filter == 'open' %}btn-mv-primary{% else %}btn-mv-outline{% endif %}">
+        Open
+      </a>
+      <a href="?status=resolved" class="btn btn-sm {% if status_filter == 'resolved' %}btn-mv-primary{% else %}btn-mv-outline{% endif %}">
+        Resolved
+      </a>
+      <a href="?status=dismissed" class="btn btn-sm {% if status_filter == 'dismissed' %}btn-mv-primary{% else %}btn-mv-outline{% endif %}">
+        Dismissed
+      </a>
+      <a href="?status=all" class="btn btn-sm {% if status_filter == 'all' %}btn-mv-primary{% else %}btn-mv-outline{% endif %}">
+        All
+      </a>
     </div>
   </div>
 
@@ -17,44 +35,83 @@
         <thead>
           <tr class="text-muted small">
             <th>ID</th>
-            <th>Reason</th>
+            <th>Reason & Description</th>
             <th>Target</th>
             <th>Reported By</th>
             <th>Status</th>
-            <th>Reported On</th>
-            <th>Action</th>
+            <th>Resolution</th>
+            <th class="text-end">Moderation Action</th>
           </tr>
         </thead>
         <tbody>
           {% for r in reports %}
             <tr>
               <td>#{{ r.id }}</td>
-              <td class="fw-bold text-white">{{ r.reason }}</td>
-              <td class="small">
-                {% if r.event %}Event: {{ r.event.title }}{% elif r.reported_user %}User: {{ r.reported_user.username }}{% else %}-{% endif %}
+              <td>
+                <span class="fw-bold text-white">{{ r.reason }}</span>
+                <div class="small text-muted mt-1">{{ r.description|truncatewords:20 }}</div>
               </td>
-              <td class="small">{{ r.reported_by.username }}</td>
+              <td class="small">
+                {% if r.event %}
+                  <a href="{{ r.event.get_absolute_url }}" class="text-info text-decoration-none" target="_blank">
+                    <i class="bi bi-box-arrow-up-right me-1"></i> Event: {{ r.event.title }}
+                  </a>
+                {% elif r.reported_user %}
+                  <span class="text-white">User: {{ r.reported_user.username }}</span>
+                {% else %}
+                  <span class="text-dim">General Content</span>
+                {% endif %}
+              </td>
+              <td class="small text-muted">{{ r.reported_by.username }}</td>
               <td>
                 {% if r.status == 'open' %}
                   <span class="badge bg-danger">Open</span>
-                {% elif r.status == 'under_review' %}
-                  <span class="badge bg-warning text-dark">Under Review</span>
+                {% elif r.status == 'resolved' %}
+                  <span class="badge bg-success">Resolved</span>
+                {% elif r.status == 'dismissed' %}
+                  <span class="badge bg-secondary">Dismissed</span>
                 {% else %}
-                  <span class="badge bg-secondary">{{ r.get_status_display }}</span>
+                  <span class="badge bg-warning text-dark">{{ r.get_status_display }}</span>
                 {% endif %}
               </td>
-              <td class="small text-dim">{{ r.created_at|date:"M d, Y" }}</td>
-              <td>
-                <a href="/admin/moderation/eventreport/{{ r.id }}/change/" target="_blank" class="btn btn-sm btn-mv-outline">
-                  Review
-                </a>
+              <td class="small text-dim">
+                {% if r.resolution_notes %}
+                  <em>{{ r.resolution_notes|truncatechars:40 }}</em>
+                {% else %}
+                  &mdash;
+                {% endif %}
+              </td>
+              <td class="text-end">
+                {% if r.status == 'open' %}
+                  <div class="d-flex gap-1 justify-content-end">
+                    <!-- Resolve Form -->
+                    <form method="post" action="{% url 'platform_admin:resolve_report' report_id=r.id %}" class="d-inline"
+                          onsubmit="return confirm('Mark report #{{ r.id }} as resolved?');">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-success" title="Mark as Resolved">
+                        <i class="bi bi-check2"></i> Resolve
+                      </button>
+                    </form>
+
+                    <!-- Dismiss Form -->
+                    <form method="post" action="{% url 'platform_admin:dismiss_report' report_id=r.id %}" class="d-inline"
+                          onsubmit="return confirm('Dismiss report #{{ r.id }}?');">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-outline-secondary" title="Dismiss Report">
+                        <i class="bi bi-x"></i> Dismiss
+                      </button>
+                    </form>
+                  </div>
+                {% else %}
+                  <span class="small text-dim">Reviewed by {{ r.reviewed_by.username|default:"Admin" }}</span>
+                {% endif %}
               </td>
             </tr>
           {% empty %}
             <tr>
               <td colspan="7" class="text-center text-muted py-5">
                 <i class="bi bi-shield-check fs-2 text-success d-block mb-2"></i>
-                No reports submitted. The campus community is healthy!
+                No reports found under this filter.
               </td>
             </tr>
           {% endfor %}
