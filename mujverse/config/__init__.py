@@ -1,0 +1,1 @@
+# MUJVERSE config package

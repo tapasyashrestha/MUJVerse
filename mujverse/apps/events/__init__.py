@@ -1,0 +1,2 @@
+# MUJVERSE events app
+

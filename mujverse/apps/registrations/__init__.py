@@ -1,0 +1,2 @@
+# MUJVERSE registrations app
+
