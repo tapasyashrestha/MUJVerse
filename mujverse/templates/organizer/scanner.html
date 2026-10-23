@@ -1,47 +1,358 @@
 {% extends "base.html" %}
 
-{% block title %}Check-in Scanner — {{ event.title }} — MUJVERSE{% endblock %}
+{% block title %}Check-in Terminal — {{ event.title }} — MUJVERSE{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container py-4">
   <div class="row justify-content-center">
-    <div class="col-lg-6 col-md-8">
-      <div class="mb-3">
-        <a href="{% url 'organizer:dashboard' %}" class="small text-muted">&larr; Back to Organizer Dashboard</a>
+    <div class="col-lg-8 col-md-10">
+      <!-- Breadcrumb / Header -->
+      <div class="mb-3 d-flex justify-content-between align-items-center">
+        <a href="{% url 'organizer:dashboard' %}" class="small text-muted text-decoration-none">
+          <i class="bi bi-arrow-left me-1"></i> Back to Organizer Dashboard
+        </a>
+        <a href="{% url 'organizer:event_attendees' pk=event.id %}" class="small text-info text-decoration-none">
+          <i class="bi bi-people me-1"></i> View Full Attendee List
+        </a>
       </div>
 
-      <div class="mv-card p-4 p-md-5">
-        <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom" style="border-color: var(--mv-border) !important;">
+      <div class="mv-card p-4 p-md-5 mb-4">
+        <!-- Event Header & Live Stats -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-3 border-bottom" style="border-color: var(--mv-border) !important;">
           <div>
-            <span class="badge badge-role-organizer mb-1">Check-in Terminal</span>
-            <h3 class="h5 fw-bold text-white mb-0">{{ event.title }}</h3>
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span class="badge badge-role-organizer">Verification Terminal</span>
+              <span class="badge bg-dark border border-secondary">{{ event.category.name }}</span>
+            </div>
+            <h2 class="h4 fw-bold text-white mb-0">{{ event.title }}</h2>
+            <div class="small text-muted mt-1"><i class="bi bi-geo-alt text-danger me-1"></i>{{ event.venue }}</div>
           </div>
-          <div class="text-end">
-            <span class="small text-muted d-block">Checked in</span>
-            <span class="fw-bold text-info">{{ event.attendance_count }} / {{ event.confirmed_registrations_count }}</span>
+          <div class="text-end mt-2 mt-sm-0">
+            <span class="small text-muted d-block">Checked in / Confirmed</span>
+            <div class="h4 fw-bold text-info mb-0" id="liveStats">
+              <span id="statAttendanceCount">{{ event.attendance_count }}</span> / <span id="statConfirmedCount">{{ event.confirmed_registrations_count }}</span>
+            </div>
+            <span class="small text-dim" id="statAttendanceRate">({{ event.attendance_rate }}% turnout)</span>
           </div>
         </div>
 
-        <!-- Camera Scanner Simulation / Preview Container -->
-        <div class="p-4 rounded-4 text-center mb-4" style="background: rgba(0, 0, 0, 0.5); border: 2px dashed var(--mv-border-violet);">
-          <div class="py-4">
-            <i class="bi bi-camera-video fs-1 text-info mb-2 d-block"></i>
-            <h6 class="text-white">Camera Check-in Scanner</h6>
-            <p class="small text-muted mb-3">Live camera barcode scanner activates here over HTTPS in Phase 5.</p>
+        <!-- Real-time Verification Feedback Banner -->
+        <div id="resultBanner" class="alert d-none mb-4 py-3 shadow" role="alert">
+          <div class="d-flex align-items-center gap-3">
+            <div id="resultIcon" class="fs-1"></div>
+            <div class="flex-grow-1">
+              <h5 id="resultHeading" class="fw-bold mb-1"></h5>
+              <div id="resultMessage" class="small"></div>
+              <div id="resultAttendeeDetails" class="small mt-1 text-dim"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Camera Scanner Area -->
+        <div class="mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <label class="form-label fw-bold mb-0 text-white">
+              <i class="bi bi-camera-video text-info me-1"></i> Live Camera Scanner
+            </label>
+            <div class="d-flex gap-2">
+              <button id="btnStartScan" class="btn btn-sm btn-mv-cyan">
+                <i class="bi bi-play-fill me-1"></i> Start Camera
+              </button>
+              <button id="btnStopScan" class="btn btn-sm btn-outline-danger d-none">
+                <i class="bi bi-stop-fill me-1"></i> Stop Camera
+              </button>
+            </div>
+          </div>
+
+          <!-- Scanner viewport container -->
+          <div id="scannerContainer" class="p-3 rounded-4 text-center" style="background: rgba(0, 0, 0, 0.6); border: 2px dashed var(--mv-border-violet); min-height: 260px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <div id="qr-reader" style="width: 100%; max-width: 420px; margin: 0 auto;"></div>
+            <div id="scannerPlaceholder" class="py-4">
+              <i class="bi bi-qr-code-scan fs-1 text-dim mb-2 d-block"></i>
+              <h6 class="text-white mb-1">Camera Scanner Idle</h6>
+              <p class="small text-muted mb-0">Click <strong>Start Camera</strong> above when ready to scan tickets.</p>
+              <div class="small text-dim mt-1">Camera permissions are requested only upon activation.</div>
+            </div>
           </div>
         </div>
 
         <!-- Manual Token Entry Fallback -->
         <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--mv-border);">
-          <label class="form-label small fw-bold">Manual Token Entry Fallback</label>
+          <label class="form-label small fw-bold text-white mb-1">
+            <i class="bi bi-keyboard text-warning me-1"></i> Manual Token Entry Fallback
+          </label>
           <div class="input-group">
-            <input type="text" id="manualTokenInput" class="form-control font-monospace" placeholder="Enter 32-character ticket token...">
-            <button class="btn btn-mv-cyan" type="button" id="verifyTokenBtn">Verify</button>
+            <input type="text" id="manualTokenInput" class="form-control font-monospace" placeholder="Paste or type 32-character ticket token..." autocomplete="off">
+            <button class="btn btn-mv-cyan" type="button" id="btnManualVerify">
+              <i class="bi bi-check2-circle me-1"></i> Verify Pass
+            </button>
           </div>
-          <div class="form-text text-dim">Use this if the student's phone screen cannot be scanned.</div>
+          <div class="form-text text-dim">Use this fallback if the student's phone screen cannot be scanned by camera.</div>
+        </div>
+      </div>
+
+      <!-- Live Recent Check-ins Feed -->
+      <div class="mv-card p-4">
+        <h5 class="fw-bold text-white mb-3 d-flex align-items-center justify-content-between">
+          <span><i class="bi bi-clock-history text-info me-2"></i>Recent Check-ins</span>
+          <span class="badge bg-dark text-muted font-monospace small">Live Feed</span>
+        </h5>
+
+        <div class="table-responsive">
+          <table class="table table-dark table-hover mb-0 align-middle">
+            <thead>
+              <tr class="text-muted small">
+                <th>Attendee</th>
+                <th>Student ID</th>
+                <th>Time</th>
+                <th>Method</th>
+              </tr>
+            </thead>
+            <tbody id="recentCheckinsBody">
+              {% for att in recent_attendances %}
+                <tr>
+                  <td class="fw-bold text-white">{{ att.registration.student.profile.display_name|default:att.registration.student.username }}</td>
+                  <td class="small text-muted">{{ att.registration.student.profile.student_identifier|default:"N/A" }}</td>
+                  <td class="small text-info">{{ att.checked_in_at|date:"h:i:s A" }}</td>
+                  <td><span class="badge bg-secondary">{{ att.get_method_display }}</span></td>
+                </tr>
+              {% empty %}
+                <tr id="noCheckinsRow">
+                  <td colspan="4" class="text-center text-muted py-3 small">No check-ins recorded yet for this session.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- html5-qrcode scanning library from CDN -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const verifyUrl = "{% url 'attendance:verify_checkin' event_id=event.id %}";
+  const csrfToken = "{{ csrf_token }}";
+
+  let html5QrCode = null;
+  let isScanning = false;
+  let isProcessing = false;
+
+  const btnStart = document.getElementById("btnStartScan");
+  const btnStop = document.getElementById("btnStopScan");
+  const placeholder = document.getElementById("scannerPlaceholder");
+  const banner = document.getElementById("resultBanner");
+  const icon = document.getElementById("resultIcon");
+  const heading = document.getElementById("resultHeading");
+  const message = document.getElementById("resultMessage");
+  const attendeeDetails = document.getElementById("resultAttendeeDetails");
+
+  const statAttendanceCount = document.getElementById("statAttendanceCount");
+  const statAttendanceRate = document.getElementById("statAttendanceRate");
+  const recentTable = document.getElementById("recentCheckinsBody");
+  const noCheckinsRow = document.getElementById("noCheckinsRow");
+
+  // Web Audio chime feedback generator
+  function playTone(success = true) {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (success) {
+        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1); // A5
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.35);
+      } else {
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(220, audioCtx.currentTime); // A3
+        osc.frequency.setValueAtTime(164.81, audioCtx.currentTime + 0.12); // E3
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.4);
+      }
+    } catch (e) {
+      // AudioContext not available or blocked
+    }
+  }
+
+  function showResult(success, code, text, attendee = null) {
+    banner.classList.remove("d-none", "alert-success", "alert-danger", "alert-warning");
+
+    if (success) {
+      banner.classList.add("alert-success");
+      icon.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i>';
+      heading.textContent = "Check-in Verified!";
+      heading.className = "fw-bold mb-1 text-success";
+      message.textContent = text;
+      if (attendee) {
+        attendeeDetails.innerHTML = `<strong>${attendee.name}</strong> (ID: ${attendee.student_id}) &bull; ${attendee.email || ''}`;
+      } else {
+        attendeeDetails.textContent = "";
+      }
+      playTone(true);
+    } else {
+      if (code === "ALREADY_CHECKED_IN") {
+        banner.classList.add("alert-warning");
+        icon.innerHTML = '<i class="bi bi-exclamation-triangle-fill text-warning"></i>';
+        heading.textContent = "Already Checked In";
+        heading.className = "fw-bold mb-1 text-warning";
+      } else if (code === "WRONG_EVENT") {
+        banner.classList.add("alert-danger");
+        icon.innerHTML = '<i class="bi bi-x-octagon-fill text-danger"></i>';
+        heading.textContent = "Wrong Event Ticket";
+        heading.className = "fw-bold mb-1 text-danger";
+      } else if (code === "CANCELLED") {
+        banner.classList.add("alert-danger");
+        icon.innerHTML = '<i class="bi bi-slash-circle-fill text-danger"></i>';
+        heading.textContent = "Registration Cancelled";
+        heading.className = "fw-bold mb-1 text-danger";
+      } else {
+        banner.classList.add("alert-danger");
+        icon.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i>';
+        heading.textContent = "Invalid Ticket";
+        heading.className = "fw-bold mb-1 text-danger";
+      }
+      message.textContent = text;
+      if (attendee) {
+        attendeeDetails.innerHTML = `Attendee: <strong>${attendee.name}</strong> (ID: ${attendee.student_id})`;
+      } else {
+        attendeeDetails.textContent = "";
+      }
+      playTone(false);
+    }
+  }
+
+  async function sendTokenVerification(token, method = "qr_scan") {
+    if (isProcessing) return;
+    isProcessing = true;
+
+    try {
+      const response = await fetch(verifyUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+        },
+        body: JSON.stringify({ token: token, method: method }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        showResult(true, data.code, data.message, data.attendee);
+
+        // Update stats
+        if (data.stats) {
+          statAttendanceCount.textContent = data.stats.attendance_count;
+          statAttendanceRate.textContent = `(${data.stats.attendance_rate}% turnout)`;
+        }
+
+        // Prepend to recent check-ins table
+        if (noCheckinsRow) noCheckinsRow.remove();
+        const tr = document.createElement("tr");
+        tr.className = "table-success";
+        tr.innerHTML = `
+          <td class="fw-bold text-white">${data.attendee.name}</td>
+          <td class="small text-muted">${data.attendee.student_id}</td>
+          <td class="small text-info">${data.attendee.checked_in_at}</td>
+          <td><span class="badge bg-secondary">${data.attendee.method}</span></td>
+        `;
+        recentTable.prepend(tr);
+        setTimeout(() => tr.classList.remove("table-success"), 2500);
+      } else {
+        showResult(false, data.code, data.message, data.attendee);
+      }
+    } catch (err) {
+      showResult(false, "NETWORK_ERROR", "Network or server connection error. Please try again.");
+    } finally {
+      // Allow subsequent scan after cooldown
+      setTimeout(() => {
+        isProcessing = false;
+      }, 1500);
+    }
+  }
+
+  // Camera start button handler
+  btnStart.addEventListener("click", async function () {
+    if (isScanning) return;
+
+    if (!html5QrCode) {
+      html5QrCode = new Html5Qrcode("qr-reader");
+    }
+
+    try {
+      placeholder.classList.add("d-none");
+      btnStart.classList.add("d-none");
+      btnStop.classList.remove("d-none");
+
+      await html5QrCode.start(
+        { facingMode: "environment" },
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+        },
+        (decodedText) => {
+          sendTokenVerification(decodedText, "qr_scan");
+        },
+        (errorMessage) => {
+          // ignore low-level frame scan misses
+        }
+      );
+      isScanning = true;
+    } catch (err) {
+      btnStart.classList.remove("d-none");
+      btnStop.classList.add("d-none");
+      placeholder.classList.remove("d-none");
+      showResult(false, "CAMERA_ERROR", "Camera permission was not granted or no suitable camera was found. Use the manual token entry below.");
+    }
+  });
+
+  // Camera stop button handler
+  btnStop.addEventListener("click", async function () {
+    if (!isScanning || !html5QrCode) return;
+    try {
+      await html5QrCode.stop();
+      isScanning = false;
+      placeholder.classList.remove("d-none");
+      btnStart.classList.remove("d-none");
+      btnStop.classList.add("d-none");
+    } catch (err) {
+      console.error(err);
+    }
+  });
+
+  // Manual token verify button handler
+  const manualInput = document.getElementById("manualTokenInput");
+  const btnManual = document.getElementById("btnManualVerify");
+
+  function triggerManualVerify() {
+    const tokenVal = manualInput.value.trim();
+    if (!tokenVal) {
+      showResult(false, "EMPTY_TOKEN", "Please enter a ticket token.");
+      manualInput.focus();
+      return;
+    }
+    sendTokenVerification(tokenVal, "manual");
+    manualInput.value = "";
+  }
+
+  btnManual.addEventListener("click", triggerManualVerify);
+  manualInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      triggerManualVerify();
+    }
+  });
+});
+</script>
 {% endblock %}

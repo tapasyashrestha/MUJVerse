@@ -6,68 +6,138 @@
 <div class="container py-5">
   <div class="row justify-content-center">
     <div class="col-lg-6 col-md-8">
-      <div class="mb-3">
-        <a href="{% url 'student:dashboard' %}" class="small text-muted">&larr; Back to Student Dashboard</a>
+      <div class="mb-3 d-flex justify-content-between align-items-center">
+        <a href="{% url 'student:dashboard' %}" class="small text-muted text-decoration-none">
+          <i class="bi bi-arrow-left me-1"></i> Back to Student Dashboard
+        </a>
+        <a href="{% url 'public:event_detail' slug=registration.event.slug %}" class="small text-info text-decoration-none">
+          View Event Page <i class="bi bi-box-arrow-up-right ms-1"></i>
+        </a>
       </div>
 
-      <div class="mv-card p-4 p-md-5 border-info" style="border-style: dashed; border-width: 2px;">
+      <!-- Ticket Card Container -->
+      <div class="mv-card p-4 p-md-5 position-relative overflow-hidden" style="border: 2px dashed var(--mv-border-cyan); border-radius: 20px;">
+        <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom" style="border-color: var(--mv-border) !important;">
           <div class="mv-brand">
             <i class="bi bi-rocket-takeoff-fill text-info"></i>
-            <span>MUJ<span class="text-primary" style="color: #a78bfa !important;">VERSE</span></span>
+            <span>MUJ<span style="color: #a78bfa !important;">VERSE</span></span>
           </div>
-          <span class="badge bg-success px-3 py-2">Confirmed Pass</span>
+          {% if registration.is_confirmed %}
+            {% if registration.is_checked_in %}
+              <span class="badge bg-success px-3 py-2"><i class="bi bi-check2-circle me-1"></i> Checked In</span>
+            {% else %}
+              <span class="badge bg-primary px-3 py-2" style="background: linear-gradient(135deg, #7c3aed, #06b6d4) !important;">
+                Confirmed Pass
+              </span>
+            {% endif %}
+          {% else %}
+            <span class="badge bg-danger px-3 py-2"><i class="bi bi-x-circle me-1"></i> Cancelled</span>
+          {% endif %}
         </div>
 
+        <!-- Dynamic QR Code Card -->
         <div class="text-center mb-4">
-          <div class="d-inline-block p-4 rounded-4 bg-white text-dark shadow-lg mb-3">
-            <!-- QR code representation / placeholder for token -->
-            <div style="width: 180px; height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff;">
-              <i class="bi bi-qr-code fs-1 text-dark" style="font-size: 7rem !important;"></i>
+          {% if registration.is_confirmed %}
+            <div class="d-inline-block p-3 rounded-4 bg-white shadow-lg mb-2">
+              <img src="{% url 'student:ticket_qr' ticket_token=registration.ticket_token %}"
+                   alt="QR Ticket Code"
+                   class="img-fluid rounded-2"
+                   style="width: 200px; height: 200px; display: block;" />
+              <div class="font-monospace text-center small text-muted mt-2 fw-bold" style="font-size: 0.72rem; letter-spacing: 1px;">
+                {{ registration.ticket_token }}
+              </div>
             </div>
-            <div class="font-monospace text-center small text-muted mt-2" style="font-size: 0.7rem;">
-              {{ registration.ticket_token }}
+            <div class="small text-muted">
+              {% if registration.is_checked_in %}
+                <span class="text-success"><i class="bi bi-shield-check me-1"></i> Verified and admitted to venue</span>
+              {% else %}
+                Present this QR code or token at the venue check-in terminal.
+              {% endif %}
             </div>
-          </div>
-          <div class="small text-muted">Present this QR code at the venue scanner for entry verification.</div>
+          {% else %}
+            <div class="p-5 rounded-4 text-center my-3" style="background: rgba(244, 63, 94, 0.1); border: 1px dashed rgba(244, 63, 94, 0.4);">
+              <i class="bi bi-ticket-detailed text-danger fs-1 mb-2 d-block"></i>
+              <h5 class="text-danger fw-bold">Pass Inactive</h5>
+              <p class="small text-muted mb-0">This registration was cancelled on {{ registration.cancelled_at|date:"M d, Y h:i A" }}.</p>
+            </div>
+          {% endif %}
         </div>
 
+        <!-- Event & Attendee Details -->
         <div class="p-3 rounded-3 mb-4" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--mv-border);">
-          <div class="text-muted small">Event</div>
-          <h4 class="fw-bold text-white mb-2">{{ registration.event.title }}</h4>
+          <div class="text-muted small text-uppercase fw-semibold" style="letter-spacing: 0.5px;">Campus Event</div>
+          <h4 class="fw-bold text-white mb-3">{{ registration.event.title }}</h4>
 
-          <div class="row g-2 small text-dim">
-            <div class="col-6">
-              <span class="text-muted d-block">Attendee:</span>
-              <strong class="text-white">{{ registration.student.profile.display_name|default:registration.student.username }}</strong>
+          <div class="row g-3 small text-dim">
+            <div class="col-sm-6">
+              <span class="text-muted d-block">Attendee Name:</span>
+              <strong class="text-white">{{ registration.student.profile.display_name|default:registration.student.get_full_name|default:registration.student.username }}</strong>
             </div>
-            <div class="col-6">
-              <span class="text-muted d-block">Student ID:</span>
+            <div class="col-sm-6">
+              <span class="text-muted d-block">Student ID / Roll No:</span>
               <strong class="text-white">{{ registration.student.profile.student_identifier|default:"Not Provided" }}</strong>
             </div>
-            <div class="col-6 mt-2">
+            <div class="col-sm-6">
               <span class="text-muted d-block">Date & Time:</span>
-              <strong class="text-white">{{ registration.event.start_datetime|date:"M d, Y h:i A" }}</strong>
+              <strong class="text-white">{{ registration.event.start_datetime|date:"l, M d, Y" }}<br>{{ registration.event.start_datetime|date:"h:i A" }} - {{ registration.event.end_datetime|date:"h:i A" }}</strong>
             </div>
-            <div class="col-6 mt-2">
+            <div class="col-sm-6">
               <span class="text-muted d-block">Venue:</span>
               <strong class="text-white">{{ registration.event.venue }}</strong>
             </div>
           </div>
         </div>
 
-        <div class="d-flex justify-content-between align-items-center">
-          <button onclick="window.print()" class="btn btn-mv-outline">
-            <i class="bi bi-printer me-1"></i> Print / Save Pass
-          </button>
-          {% if registration.is_checked_in %}
-            <span class="badge bg-success p-2"><i class="bi bi-check2-circle me-1"></i> Already Checked In</span>
-          {% else %}
-            <span class="badge bg-info p-2"><i class="bi bi-hourglass-split me-1"></i> Ready for Check-in</span>
+        <!-- Actions -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 pt-3 border-top" style="border-color: var(--mv-border) !important;">
+          <div>
+            <button onclick="window.print()" class="btn btn-mv-outline">
+              <i class="bi bi-printer me-1"></i> Print / Save PDF
+            </button>
+          </div>
+
+          {% if registration.is_confirmed and not registration.is_checked_in and is_owner %}
+            <form method="post" action="{% url 'student:ticket_cancel' ticket_token=registration.ticket_token %}" class="d-inline"
+                  onsubmit="return confirm('Are you sure you want to cancel this registration? Your seat will be released immediately.');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-danger">
+                <i class="bi bi-x-circle me-1"></i> Cancel Registration
+              </button>
+            </form>
           {% endif %}
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<style>
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .mv-card, .mv-card * {
+    visibility: visible;
+  }
+  .mv-card {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 2px solid #000000 !important;
+  }
+  .mv-card .text-white, .mv-card strong, .mv-card h4 {
+    color: #000000 !important;
+  }
+  .mv-card .text-muted, .mv-card .text-dim {
+    color: #555555 !important;
+  }
+  button, form, a[href*="dashboard"] {
+    display: none !important;
+  }
+}
+</style>
 {% endblock %}

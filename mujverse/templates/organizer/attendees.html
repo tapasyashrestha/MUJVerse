@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Attendees — {{ event.title }} — MUJVERSE{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Navigation Header -->
+  <div class="mb-3 d-flex justify-content-between align-items-center">
+    <a href="{% url 'organizer:dashboard' %}" class="small text-muted text-decoration-none">
+      <i class="bi bi-arrow-left me-1"></i> Back to Organizer Dashboard
+    </a>
+    <div class="d-flex gap-2">
+      <a href="{% url 'attendance:scanner' event_id=event.id %}" class="btn btn-sm btn-mv-cyan">
+        <i class="bi bi-qr-code-scan me-1"></i> Launch Scanner Terminal
+      </a>
+      <a href="{% url 'organizer:event_export_attendees' pk=event.id %}" class="btn btn-sm btn-mv-primary">
+        <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export Attendees (CSV)
+      </a>
+    </div>
+  </div>
+
+  <!-- Event Header -->
+  <div class="mv-card p-4 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <span class="badge bg-dark border border-secondary">{{ event.category.name }}</span>
+          <span class="badge badge-status-approved">{{ event.get_status_display }}</span>
+        </div>
+        <h1 class="h3 fw-bold text-white mb-1">{{ event.title }}</h1>
+        <div class="small text-muted">
+          <i class="bi bi-calendar3 me-1 text-info"></i> {{ event.start_datetime|date:"l, M d, Y - h:i A" }} &bull;
+          <i class="bi bi-geo-alt me-1 text-danger ms-2"></i> {{ event.venue }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Statistics Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-lg-3 col-sm-6">
+      <div class="stat-card">
+        <div class="stat-value text-white">{{ event.capacity }}</div>
+        <div class="stat-label">Total Capacity</div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+      <div class="stat-card">
+        <div class="stat-value text-info">{{ event.confirmed_registrations_count }}</div>
+        <div class="stat-label">Confirmed Passes</div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+      <div class="stat-card">
+        <div class="stat-value text-success">{{ event.attendance_count }}</div>
+        <div class="stat-label">Verified Checked-In</div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+      <div class="stat-card">
+        <div class="stat-value" style="color: #a78bfa;">{{ event.attendance_rate }}%</div>
+        <div class="stat-label">Attendance Turnout Rate</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Controls -->
+  <div class="mv-card p-3 mb-4">
+    <form method="get" class="row g-2 align-items-center">
+      <div class="col-md-6 col-12">
+        <div class="input-group">
+          <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
+          <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search by student name, roll number, or email...">
+        </div>
+      </div>
+
+      <div class="col-md-4 col-8">
+        <select name="status" class="form-select" onchange="this.form.submit()">
+          <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Records ({{ event.registrations.count }})</option>
+          <option value="checked_in" {% if status_filter == 'checked_in' %}selected{% endif %}>Checked In ({{ event.attendance_count }})</option>
+          <option value="not_checked_in" {% if status_filter == 'not_checked_in' %}selected{% endif %}>Pending Check-in</option>
+          <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>Confirmed Only</option>
+          <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelled Registrations</option>
+        </select>
+      </div>
+
+      <div class="col-md-2 col-4 d-grid">
+        <button type="submit" class="btn btn-mv-cyan">Filter</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Attendees Table -->
+  <div class="mv-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <span class="small text-muted">Showing <strong>{{ total_registrations }}</strong> attendee record{{ total_registrations|pluralize }}</span>
+      {% if query or status_filter != 'all' %}
+        <a href="{% url 'organizer:event_attendees' pk=event.id %}" class="small text-danger text-decoration-none">
+          <i class="bi bi-x-circle me-1"></i> Clear filters
+        </a>
+      {% endif %}
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-dark table-hover mb-0 align-middle">
+        <thead>
+          <tr class="text-muted small">
+            <th>Attendee Name</th>
+            <th>Roll No / Student ID</th>
+            <th>Registered At</th>
+            <th>Status</th>
+            <th>Check-in Status</th>
+            <th>Verified Time</th>
+            <th>Method</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for reg in registrations %}
+            <tr>
+              <td>
+                <span class="fw-bold text-white">{{ reg.student.profile.display_name|default:reg.student.get_full_name|default:reg.student.username }}</span>
+                <div class="small text-muted">{{ reg.student.email }}</div>
+              </td>
+              <td>
+                <span class="font-monospace text-info">{{ reg.student.profile.student_identifier|default:"Not Provided" }}</span>
+              </td>
+              <td class="small text-muted">{{ reg.registered_at|date:"M d, Y h:i A" }}</td>
+              <td>
+                {% if reg.is_confirmed %}
+                  <span class="badge bg-success">Confirmed</span>
+                {% else %}
+                  <span class="badge bg-danger">Cancelled</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if reg.is_checked_in %}
+                  <span class="badge bg-success"><i class="bi bi-check2-circle me-1"></i> Checked In</span>
+                {% else %}
+                  <span class="badge bg-secondary">Not Checked In</span>
+                {% endif %}
+              </td>
+              <td class="small text-muted">
+                {% if reg.is_checked_in %}
+                  {{ reg.attendance.checked_in_at|date:"M d, h:i:s A" }}
+                {% else %}
+                  &mdash;
+                {% endif %}
+              </td>
+              <td class="small text-dim">
+                {% if reg.is_checked_in %}
+                  {{ reg.attendance.get_method_display }}
+                {% else %}
+                  &mdash;
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="7" class="text-center text-muted py-5">
+                <i class="bi bi-people fs-2 mb-2 d-block text-dim"></i>
+                No matching attendees found.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

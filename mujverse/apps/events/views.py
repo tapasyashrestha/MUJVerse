@@ -4,11 +4,16 @@ Public event discovery, organizer event CRUD + submission,
 and administrator moderation approval / rejection with AuditLog.
 """
 
+import csv
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
 from django.utils import timezone
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.http import HttpResponse
+from django.core.exceptions import PermissionDenied
+from django.contrib.auth.decorators import login_required
+from django.utils.text import slugify
 
 from mujverse.apps.accounts.decorators import organizer_required, admin_required
 from mujverse.apps.moderation.models import AuditLog
@@ -141,16 +146,24 @@ def event_detail_view(request, slug):
             return redirect("public:explore")
 
     user_registration = None
+    user_cancelled_registration = None
     if request.user.is_authenticated:
         user_registration = Registration.objects.filter(
             event=event,
             student=request.user,
             status="confirmed",
         ).first()
+        if not user_registration:
+            user_cancelled_registration = Registration.objects.filter(
+                event=event,
+                student=request.user,
+                status="cancelled",
+            ).first()
 
     context = {
         "event": event,
         "user_registration": user_registration,
+        "user_cancelled_registration": user_cancelled_registration,
     }
     return render(request, "public/event_detail.html", context)
 
@@ -483,3 +496,139 @@ def reports_admin_view(request):
         "reported_by", "event", "reported_user"
     ).order_by("-created_at")
     return render(request, "admin_dashboard/reports.html", {"reports": reports})
+
+
+# ─── Attendee Management & CSV Export (Phase 3) ────────────────────────────────
+
+def sanitize_csv_cell(val):
+    """Prevent spreadsheet formula injection by quoting unsafe leading characters."""
+    if val is None:
+        return ""
+    s = str(val).strip()
+    if s and s[0] in ("=", "+", "-", "@", "\t", "\r"):
+        return f"'{s}"
+    return s
+
+
+@login_required
+def event_attendees_view(request, pk):
+    """
+    Displays the attendee list, check-in status, and statistics for an authorized organizer or admin.
+    """
+    event = get_object_or_404(Event, pk=pk)
+
+    is_owner = event.organizer_id == request.user.id
+    is_admin = request.user.is_staff or (getattr(request.user, "profile", None) and request.user.profile.is_admin)
+    if not (is_owner or is_admin):
+        raise PermissionDenied("You can only view attendee records for your own events.")
+
+    registrations = (
+        Registration.objects.filter(event=event)
+        .select_related("student", "student__profile", "attendance", "attendance__checked_in_by")
+        .order_by("-registered_at")
+    )
+
+    query = request.GET.get("q", "").strip()
+    status_filter = request.GET.get("status", "all").strip()
+
+    if query:
+        registrations = registrations.filter(
+            Q(student__username__icontains=query)
+            | Q(student__email__icontains=query)
+            | Q(student__profile__display_name__icontains=query)
+            | Q(student__profile__student_identifier__icontains=query)
+        )
+
+    if status_filter == "checked_in":
+        registrations = registrations.filter(attendance__isnull=False)
+    elif status_filter == "not_checked_in":
+        registrations = registrations.filter(status="confirmed", attendance__isnull=True)
+    elif status_filter == "confirmed":
+        registrations = registrations.filter(status="confirmed")
+    elif status_filter == "cancelled":
+        registrations = registrations.filter(status="cancelled")
+
+    context = {
+        "event": event,
+        "registrations": registrations,
+        "total_registrations": registrations.count(),
+        "query": query,
+        "status_filter": status_filter,
+    }
+    return render(request, "organizer/attendees.html", context)
+
+
+@login_required
+def event_export_attendees_csv_view(request, pk):
+    """
+    Exports the attendee list to CSV with protections against spreadsheet formula injection.
+    Only authorized organizers and administrators can export.
+    """
+    event = get_object_or_404(Event, pk=pk)
+
+    is_owner = event.organizer_id == request.user.id
+    is_admin = request.user.is_staff or (getattr(request.user, "profile", None) and request.user.profile.is_admin)
+    if not (is_owner or is_admin):
+        raise PermissionDenied("You can only export attendee records for your own events.")
+
+    registrations = (
+        Registration.objects.filter(event=event)
+        .select_related("student", "student__profile", "attendance", "attendance__checked_in_by")
+        .order_by("registered_at")
+    )
+
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    safe_slug = slugify(event.title) or "event"
+    response["Content-Disposition"] = f'attachment; filename="attendees_{safe_slug}_{event.id}.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([
+        "Attendee Name",
+        "Student Identifier",
+        "Registration Date",
+        "Registration Status",
+        "Checked In",
+        "Check-in Time",
+        "Check-in Method",
+        "Verified By",
+    ])
+
+    for reg in registrations:
+        profile = getattr(reg.student, "profile", None)
+        name = (
+            profile.display_name
+            if profile and profile.display_name
+            else reg.student.get_full_name() or reg.student.username
+        )
+        student_id = (
+            profile.student_identifier
+            if profile and profile.student_identifier
+            else "N/A"
+        )
+        is_checked_in = hasattr(reg, "attendance")
+        checkin_time = (
+            reg.attendance.checked_in_at.strftime("%Y-%m-%d %H:%M:%S")
+            if is_checked_in
+            else "N/A"
+        )
+        checkin_method = reg.attendance.get_method_display() if is_checked_in else "N/A"
+        verified_by = (
+            reg.attendance.checked_in_by.username
+            if is_checked_in and reg.attendance.checked_in_by
+            else "N/A"
+        )
+
+        row = [
+            sanitize_csv_cell(name),
+            sanitize_csv_cell(student_id),
+            sanitize_csv_cell(reg.registered_at.strftime("%Y-%m-%d %H:%M:%S")),
+            sanitize_csv_cell(reg.get_status_display()),
+            sanitize_csv_cell("Yes" if is_checked_in else "No"),
+            sanitize_csv_cell(checkin_time),
+            sanitize_csv_cell(checkin_method),
+            sanitize_csv_cell(verified_by),
+        ]
+        writer.writerow(row)
+
+    return response
+

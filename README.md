@@ -98,7 +98,7 @@ cp .env.example .env
 
 ## 🧪 Running Automated Tests
 
-Run the full test suite (49 automated tests) covering authentication, role isolation, constraints, event management lifecycle, and admin moderation:
+Run the full test suite (**80 automated tests**) covering authentication, role isolation, constraints, event management lifecycle, free registration, QR tickets, attendance check-in, and CSV export:
 
 ```bash
 python manage.py test mujverse.tests
@@ -116,8 +116,16 @@ python manage.py test mujverse.tests
 - ✅ Event lifecycle: Draft ➔ Pending ➔ Approved/Rejected ➔ Resubmission workflow.
 - ✅ Admin moderation: Rejection mandates documented reasons; approvals & rejections generate immutable `AuditLog` entries.
 - ✅ Public event discovery: Only approved and published events appear on the homepage and explore directory with live filtering and pagination.
-- ✅ Database constraints: Unique `(event, student)` registration and unique `ticket_token`.
+- ✅ Concurrency-safe free registration: `select_for_update()` transaction locking prevents capacity oversubscription under simultaneous requests.
+- ✅ Deadlines & eligibility: Rejects registrations for draft/unapproved, expired, concluded, or full events.
+- ✅ Database constraints: Unique `(event, student)` registration and unpredictable 32-character hexadecimal `ticket_token`.
+- ✅ Re-registration after cancellation: Students who previously cancelled can re-claim seats if capacity allows.
+- ✅ QR code generation: High-resolution PNG QR codes encode only opaque tokens with zero personal credentials or PII.
+- ✅ Ticket access control: Students can view only their own passes; cross-student access is denied (HTTP 403).
+- ✅ Cancellation policy: Students can cancel passes and immediately release capacity, but cannot cancel after check-in or event conclusion.
+- ✅ Atomic check-in verification: Backend terminal rejects invalid, cancelled, wrong-event, or already-verified passes with exact error codes.
 - ✅ Single-use attendance check-in: OneToOne link between `Registration` and `Attendance` prevents duplicate check-ins.
+- ✅ Attendee management & CSV export: Organizers can filter attendee rosters and export CSVs sanitized against spreadsheet formula injection (`=`, `+`, `-`, `@`).
 
 ---
 

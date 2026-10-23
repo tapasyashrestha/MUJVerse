@@ -143,6 +143,11 @@
                       <i class="bi bi-qr-code-scan"></i>
                     </a>
                   {% endif %}
+                  {% if ev.status == 'approved' or ev.confirmed_registrations_count > 0 %}
+                    <a href="{% url 'organizer:event_attendees' pk=ev.pk %}" class="btn btn-sm btn-mv-outline" title="Attendees & Export">
+                      <i class="bi bi-people"></i>
+                    </a>
+                  {% endif %}
                 </div>
               </td>
             </tr>
