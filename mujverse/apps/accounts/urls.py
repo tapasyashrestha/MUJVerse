@@ -13,6 +13,8 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
     path("profile/", views.profile_view, name="profile"),
     path("dashboard-redirect/", views.dashboard_redirect_view, name="dashboard_redirect"),
+    path("demo-organizer/", views.demo_login_organizer_view, name="demo_login_organizer"),
+    path("demo-student/", views.demo_login_student_view, name="demo_login_student"),
 
     # Password Reset
     path("password-reset/", views.CustomPasswordResetView.as_view(), name="password_reset"),

@@ -1,123 +1,569 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Explore Campus Events — MUJVERSE{% endblock %}
 
+{% block extra_css %}
+<style>
+  /* ─── Hand-Drawn Explore Hero Section ───────────────────────────── */
+  .mv-explore-hero {
+    position: relative;
+    background-color: #faf5ee;
+    min-height: 290px;
+    overflow: hidden;
+    padding: 3.5rem 0 2rem;
+    border-bottom: 1.5px solid #ecd8c5;
+  }
+  .mv-explore-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: 
+      linear-gradient(180deg, rgba(254, 251, 246, 0.45) 0%, transparent 12%, transparent 80%, #faf8f5 100%),
+      linear-gradient(90deg, 
+        rgba(254, 251, 246, 0.97) 0%, 
+        rgba(254, 251, 246, 0.92) 36%, 
+        rgba(254, 251, 246, 0.65) 55%, 
+        rgba(254, 251, 246, 0.18) 78%, 
+        rgba(254, 251, 246, 0.04) 100%
+      );
+    pointer-events: none;
+    z-index: 1;
+  }
+  .mv-explore-hero-content {
+    position: relative;
+    z-index: 3;
+  }
+
+  /* Botanical Frame Doodle (Left) */
+  .mv-explore-botanical {
+    position: absolute;
+    left: -10px;
+    top: 20px;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0.9;
+  }
+
+  /* Flying Paper Airplane Doodle (Right) */
+  .mv-explore-plane {
+    position: absolute;
+    right: 20px;
+    top: 40px;
+    pointer-events: none;
+    z-index: 2;
+    animation: floatPlaneExplore 6s ease-in-out infinite;
+  }
+  @keyframes floatPlaneExplore {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-5px) rotate(2deg); }
+  }
+
+  /* Hand-Drawn Headings */
+  .mv-explore-title {
+    font-family: 'Patrick Hand', 'Caveat', cursive, sans-serif !important;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.65rem;
+    display: inline-block;
+  }
+  .mv-title-explore {
+    color: #2c231e !important;
+    font-size: 3.8rem;
+    font-weight: 700;
+    display: block;
+  }
+  .mv-title-events-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .mv-title-events {
+    color: #df682e !important;
+    font-size: 3.8rem;
+    font-weight: 700;
+  }
+
+  .mv-explore-subtitle {
+    color: #564a43 !important;
+    font-size: 1.05rem;
+    line-height: 1.5;
+    max-width: 520px;
+    font-weight: 450;
+    margin-bottom: 0;
+  }
+
+  /* ─── Floating Filter Bar ────────────────────────────────────────── */
+  .mv-filter-bar-container {
+    background: #ffffff;
+    border: 1.8px solid #edd5c0;
+    border-radius: 20px;
+    padding: 0.5rem 0.65rem 0.5rem 1.1rem;
+    box-shadow: 0 10px 30px rgba(180, 100, 40, 0.08);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-bottom: 2rem;
+  }
+
+  .mv-filter-field {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    border: 1px solid #ebd9c8;
+    border-radius: 12px;
+    background: #faf6f0;
+    padding: 0.42rem 0.8rem;
+    transition: all 0.2s ease;
+  }
+  .mv-filter-field:focus-within {
+    border-color: #df682e;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(223, 104, 46, 0.12);
+  }
+  .mv-filter-field-search {
+    flex: 1 1 200px;
+    min-width: 180px;
+  }
+  .mv-filter-input {
+    border: none !important;
+    background: transparent !important;
+    outline: none !important;
+    color: #2c231e !important;
+    font-size: 0.92rem;
+    width: 100%;
+    padding: 0;
+  }
+  .mv-filter-input::placeholder {
+    color: #8c7e75 !important;
+  }
+
+  .mv-filter-select {
+    border: none !important;
+    background: transparent !important;
+    outline: none !important;
+    color: #3d332d !important;
+    font-size: 0.9rem;
+    font-weight: 550;
+    cursor: pointer;
+    padding-right: 0.5rem;
+  }
+  .mv-filter-icon {
+    color: #df682e;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .btn-filter-submit {
+    background: linear-gradient(135deg, #f07e43 0%, #e16629 100%);
+    color: #ffffff !important;
+    border: none;
+    border-radius: 12px;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    box-shadow: 0 3px 10px rgba(225, 102, 41, 0.35);
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .btn-filter-submit:hover {
+    background: linear-gradient(135deg, #f38a52 0%, #d8591c 100%);
+    box-shadow: 0 4px 14px rgba(225, 102, 41, 0.45);
+    transform: translateY(-1px);
+  }
+
+  /* ─── Results Counter ────────────────────────────────────────────── */
+  .mv-results-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+  .mv-results-counter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #3b2f28;
+  }
+  .mv-sparkle-doodle {
+    color: #e07238;
+    font-size: 1.25rem;
+  }
+
+  /* ─── Event Cards Grid ────────────────────────────────────────────── */
+  .mv-explore-card {
+    background: #ffffff;
+    border: 1.8px solid #edd5c0;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(180, 100, 40, 0.06);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+  .mv-explore-card:hover {
+    transform: translateY(-4px);
+    border-color: #df682e;
+    box-shadow: 0 16px 36px rgba(180, 100, 40, 0.12);
+  }
+
+  .mv-card-thumb-wrap {
+    position: relative;
+    height: 195px;
+    overflow: hidden;
+    background: #faede3;
+  }
+  .mv-card-thumb-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.35s ease;
+  }
+  .mv-explore-card:hover .mv-card-thumb-img {
+    transform: scale(1.04);
+  }
+
+  /* Card Badges */
+  .card-cat-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(4px);
+    border: 1.5px solid #f29a63;
+    color: #df682e;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.25rem 0.65rem;
+    border-radius: 8px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  }
+  .card-date-badge {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: #fdf2e8;
+    backdrop-filter: blur(4px);
+    border: 1.5px solid #f2be9b;
+    color: #df682e;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.28rem 0.65rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(223, 104, 46, 0.15);
+  }
+
+  /* Card Content */
+  .mv-card-body {
+    padding: 1.35rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+  .mv-card-title {
+    font-size: 1.18rem;
+    font-weight: 700;
+    margin-bottom: 0.45rem;
+    line-height: 1.35;
+  }
+  .mv-card-title a {
+    color: #2c231e !important;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .mv-card-title a:hover {
+    color: #df682e !important;
+  }
+  .mv-card-desc {
+    color: #625750;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    margin-bottom: 1.15rem;
+    flex-grow: 1;
+  }
+
+  .mv-card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #625750;
+    padding-top: 0.85rem;
+    border-top: 1px solid #f1e2d4;
+    margin-bottom: 1.1rem;
+  }
+  .mv-card-meta-venue {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: #564a43;
+    font-weight: 500;
+  }
+  .mv-card-meta-seats {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: #16a34a;
+    font-weight: 700;
+  }
+
+  .btn-card-action {
+    display: block;
+    width: 100%;
+    background: #fffaf5;
+    border: 1.5px solid #ecd3c1;
+    color: #df682e !important;
+    font-weight: 600;
+    font-size: 0.92rem;
+    border-radius: 12px;
+    padding: 0.65rem 1rem;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  .btn-card-action:hover {
+    background: #fbeadb;
+    border-color: #df682e;
+    color: #c44f17 !important;
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 991.98px) {
+    .mv-title-explore, .mv-title-events {
+      font-size: 3rem;
+    }
+    .mv-explore-plane {
+      display: none;
+    }
+  }
+  @media (max-width: 575.98px) {
+    .mv-title-explore, .mv-title-events {
+      font-size: 2.5rem;
+    }
+    .mv-filter-field {
+      width: 100%;
+    }
+    .btn-filter-submit {
+      width: 100%;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-  <div class="mb-4">
-    <h1 class="h2 fw-bold mb-1">Explore Campus Events</h1>
-    <p class="text-muted">Find workshops, hackathons, sports matches, and cultural fests happening at MUJ.</p>
+<!-- ── Hand-Drawn Explore Hero Section ───────────────────────────── -->
+<section class="mv-explore-hero" style="background-image: url('{% static 'images/muj_sketch_bg.jpg' %}'); background-size: cover; background-position: right 36%; background-repeat: no-repeat;">
+  <!-- Soft Text Wash Overlay -->
+  <div class="mv-explore-hero-overlay"></div>
+
+  <!-- Hand-Drawn Botanical Framing Doodle (Left) -->
+  <div class="mv-explore-botanical" aria-hidden="true">
+    <svg width="140" height="180" viewBox="0 0 140 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M-10 160 C 25 130, 65 140, 95 105 C 115 80, 125 45, 135 -10" stroke="#7a8c53" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      <path d="M20 140 C 35 115, 60 125, 50 145 C 35 155, 15 150, 20 140 Z" fill="#8ea460" opacity="0.85"/>
+      <path d="M60 115 C 80 95, 105 105, 95 125 C 80 135, 55 130, 60 115 Z" fill="#a2b771" opacity="0.85"/>
+      <path d="M95 80 C 115 60, 140 70, 130 90 C 115 100, 90 95, 95 80 Z" fill="#889f59" opacity="0.9"/>
+      <circle cx="38" cy="110" r="6" fill="#f8c146" opacity="0.9"/>
+      <circle cx="38" cy="110" r="2.5" fill="#e8773e"/>
+    </svg>
   </div>
 
-  <!-- Filter & Search Controls -->
-  <div class="mv-card p-4 mb-4">
-    <form method="get" class="row g-3 align-items-end">
-      <div class="col-lg-3 col-md-6">
-        <label class="form-label">Search Query</label>
-        <div class="input-group">
-          <span class="input-group-text bg-white border-end-0" style="border-color: var(--mv-border); color: var(--mv-orange-primary);"><i class="bi bi-search"></i></span>
-          <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0" placeholder="Search title, venue...">
-        </div>
-      </div>
-
-      <div class="col-lg-2 col-md-6">
-        <label class="form-label">Category</label>
-        <select name="category" class="form-select">
-          <option value="">All Categories</option>
-          {% for cat in categories %}
-            <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <div class="col-lg-2 col-md-4">
-        <label class="form-label">Timeframe</label>
-        <select name="date" class="form-select">
-          <option value="upcoming" {% if date_filter == 'upcoming' or status_filter == 'upcoming' %}selected{% endif %}>Upcoming</option>
-          <option value="past" {% if date_filter == 'past' or status_filter == 'past' %}selected{% endif %}>Past Events</option>
-          <option value="all" {% if date_filter == 'all' or status_filter == 'all' %}selected{% endif %}>All Time</option>
-        </select>
-      </div>
-
-      <div class="col-lg-2 col-md-4">
-        <label class="form-label">Availability</label>
-        <select name="avail" class="form-select">
-          <option value="all" {% if avail_filter == 'all' %}selected{% endif %}>All Seats</option>
-          <option value="open" {% if avail_filter == 'open' %}selected{% endif %}>Open</option>
-          <option value="full" {% if avail_filter == 'full' %}selected{% endif %}>Full</option>
-        </select>
-      </div>
-
-      <div class="col-lg-2 col-md-4">
-        <label class="form-label">Sort By</label>
-        <select name="sort" class="form-select">
-          <option value="date_asc" {% if sort_by == 'date_asc' %}selected{% endif %}>Earliest Date</option>
-          <option value="date_desc" {% if sort_by == 'date_desc' %}selected{% endif %}>Latest Date</option>
-          <option value="title" {% if sort_by == 'title' %}selected{% endif %}>Title (A-Z)</option>
-        </select>
-      </div>
-
-      <div class="col-lg-1 col-md-12 d-grid">
-        <button type="submit" class="btn btn-mv-primary" title="Apply Filters">
-          <i class="bi bi-funnel-fill"></i>
-        </button>
-      </div>
-    </form>
+  <!-- Flying Paper Airplane Doodle (Right Sky) -->
+  <div class="mv-explore-plane" aria-hidden="true">
+    <svg width="60" height="48" viewBox="0 0 60 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 44 C 18 36, 26 30, 36 22" stroke="#e88950" stroke-width="1.8" stroke-dasharray="3 3" stroke-linecap="round"/>
+      <path d="M22 20 L 56 4 L 38 42 L 30 26 Z" fill="#fce5d4" stroke="#d8692c" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M56 4 L 30 26 L 40 25 Z" fill="#f6cca9" stroke="#d8692c" stroke-width="1.6" stroke-linejoin="round"/>
+    </svg>
   </div>
 
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <span class="small text-muted">Showing <strong>{{ total_results }}</strong> event{{ total_results|pluralize }}</span>
+  <div class="container position-relative mv-explore-hero-content">
+    <div class="row">
+      <div class="col-lg-7">
+        <h1 class="mv-explore-title">
+          <span class="mv-title-explore">Explore</span>
+          <span class="mv-title-events-wrap">
+            <!-- Left 3 Sunburst Dashes -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="me-1">
+              <line x1="20" y1="20" x2="23" y2="23" stroke="#e07238" stroke-width="2.2" stroke-linecap="round"/>
+              <line x1="16" y1="12" x2="21" y2="10" stroke="#e07238" stroke-width="2.2" stroke-linecap="round"/>
+              <line x1="8" y1="6" x2="9" y2="1" stroke="#e07238" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+            <span class="mv-title-events">Campus Events</span>
+            <!-- Right 3 Sunburst Dashes -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="ms-1">
+              <line x1="4" y1="20" x2="1" y2="23" stroke="#e07238" stroke-width="2.2" stroke-linecap="round"/>
+              <line x1="8" y1="12" x2="3" y2="10" stroke="#e07238" stroke-width="2.2" stroke-linecap="round"/>
+              <line x1="16" y1="6" x2="15" y2="1" stroke="#e07238" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+          </span>
+        </h1>
+        <p class="mv-explore-subtitle">
+          Find workshops, hackathons, sports matches, and cultural fests happening at MUJ.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Main Explore Content & Cards ─────────────────────────────── -->
+<div class="container py-4">
+
+  <!-- Floating Filter Toolbar Bar -->
+  <form method="get" class="mv-filter-bar-container" role="search">
+    
+    <!-- 1. Search Query -->
+    <div class="mv-filter-field mv-filter-field-search">
+      <span class="mv-filter-icon"><i class="bi bi-search"></i></span>
+      <input 
+        type="text" 
+        name="q" 
+        value="{{ search_query }}" 
+        class="mv-filter-input" 
+        placeholder="Search title, venue..."
+        aria-label="Search events"
+        autocomplete="off"
+      >
+    </div>
+
+    <!-- 2. Category Dropdown -->
+    <div class="mv-filter-field">
+      <span class="mv-filter-icon"><i class="bi bi-calendar3"></i></span>
+      <select name="category" class="mv-filter-select" aria-label="Filter by category">
+        <option value="">All Categories</option>
+        {% for cat in categories %}
+          <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- 3. Timeframe Dropdown -->
+    <div class="mv-filter-field">
+      <span class="mv-filter-icon"><i class="bi bi-calendar-event"></i></span>
+      <select name="date" class="mv-filter-select" aria-label="Filter by timeframe">
+        <option value="upcoming" {% if date_filter == 'upcoming' or status_filter == 'upcoming' %}selected{% endif %}>Upcoming</option>
+        <option value="past" {% if date_filter == 'past' or status_filter == 'past' %}selected{% endif %}>Past Events</option>
+        <option value="all" {% if date_filter == 'all' or status_filter == 'all' %}selected{% endif %}>All Time</option>
+      </select>
+    </div>
+
+    <!-- 4. Availability Dropdown -->
+    <div class="mv-filter-field">
+      <span class="mv-filter-icon"><i class="bi bi-people"></i></span>
+      <select name="avail" class="mv-filter-select" aria-label="Filter by seat availability">
+        <option value="all" {% if avail_filter == 'all' %}selected{% endif %}>All Seats</option>
+        <option value="open" {% if avail_filter == 'open' %}selected{% endif %}>Open</option>
+        <option value="full" {% if avail_filter == 'full' %}selected{% endif %}>Full</option>
+      </select>
+    </div>
+
+    <!-- 5. Sort By Dropdown -->
+    <div class="mv-filter-field">
+      <span class="mv-filter-icon"><i class="bi bi-sliders"></i></span>
+      <select name="sort" class="mv-filter-select" aria-label="Sort events">
+        <option value="date_asc" {% if sort_by == 'date_asc' %}selected{% endif %}>Earliest Date</option>
+        <option value="date_desc" {% if sort_by == 'date_desc' %}selected{% endif %}>Latest Date</option>
+        <option value="title" {% if sort_by == 'title' %}selected{% endif %}>Title (A-Z)</option>
+      </select>
+    </div>
+
+    <!-- 6. Submit Button -->
+    <button type="submit" class="btn-filter-submit" title="Apply Filters">
+      <i class="bi bi-funnel-fill"></i>
+    </button>
+  </form>
+
+  <!-- Results Count Bar -->
+  <div class="mv-results-bar">
+    <div class="mv-results-counter">
+      <span class="mv-sparkle-doodle">✨</span>
+      <span>Showing <strong>{{ total_results }}</strong> event{{ total_results|pluralize }}</span>
+    </div>
     {% if search_query or selected_category or date_filter != 'upcoming' or avail_filter != 'all' %}
-      <a href="{% url 'public:explore' %}" class="small text-danger"><i class="bi bi-x-circle me-1"></i> Clear filters</a>
+      <a href="{% url 'public:explore' %}" class="small text-danger fw-semibold text-decoration-none">
+        <i class="bi bi-x-circle me-1"></i> Clear filters
+      </a>
     {% endif %}
   </div>
 
-  <!-- Events Grid -->
+  <!-- Events 3-Column Grid -->
   <div class="row g-4">
     {% for event in page_obj %}
       <div class="col-lg-4 col-md-6">
-        <div class="mv-card event-card">
-          <div class="event-card-img-wrapper">
+        <div class="mv-explore-card">
+          <!-- Card Thumbnail Header -->
+          <div class="mv-card-thumb-wrap">
             {% if event.cover_image %}
-              <img src="{{ event.cover_image.url }}" alt="{{ event.title }}" class="event-card-img">
+              <img src="{{ event.cover_image.url }}" alt="{{ event.title }}" class="mv-card-thumb-img">
+            {% elif event.category.slug == 'academic' %}
+              <img src="{% static 'images/event_academic_thumb.png' %}" alt="{{ event.title }}" class="mv-card-thumb-img">
+            {% elif event.category.slug == 'workshops' %}
+              <img src="{% static 'images/event_workshops_thumb.png' %}" alt="{{ event.title }}" class="mv-card-thumb-img">
+            {% elif event.category.slug == 'sports' %}
+              <img src="{% static 'images/event_sports_thumb.png' %}" alt="{{ event.title }}" class="mv-card-thumb-img">
+            {% elif event.category.slug == 'hackathons' %}
+              <img src="{% static 'images/event_hackathons_thumb.jpg' %}" alt="{{ event.title }}" class="mv-card-thumb-img">
+            {% elif event.category.slug == 'cultural' %}
+              <img src="{% static 'images/event_cultural_thumb.jpg' %}" alt="{{ event.title }}" class="mv-card-thumb-img">
+            {% elif event.category.slug == 'entrepreneurship' %}
+              <img src="{% static 'images/event_entrepreneurship_thumb.jpg' %}" alt="{{ event.title }}" class="mv-card-thumb-img">
             {% else %}
-              <div class="w-100 h-100 d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #131936 0%, #1e295d 100%);">
-                <i class="bi bi-calendar4-event fs-1 text-dim"></i>
-              </div>
+              <img src="{% static 'images/event_academic_thumb.png' %}" alt="{{ event.title }}" class="mv-card-thumb-img">
             {% endif %}
-            <span class="event-category-badge">{{ event.category.name }}</span>
-            <span class="event-date-badge">{{ event.start_datetime|date:"M d, H:i" }}</span>
+
+            <!-- Category Badge (Top-Left) -->
+            <span class="card-cat-badge">{{ event.category.name }}</span>
+            <!-- Date Badge (Bottom-Right) -->
+            <span class="card-date-badge">
+              <i class="bi bi-calendar-event me-1"></i>{{ event.start_datetime|date:"M d, H:i" }}
+            </span>
           </div>
-          <div class="p-4 d-flex flex-column flex-grow-1">
-            <h5 class="fw-bold mb-2">
-              <a href="{{ event.get_absolute_url }}" class="text-white text-decoration-none">{{ event.title }}</a>
+
+          <!-- Card Body -->
+          <div class="mv-card-body">
+            <h5 class="mv-card-title">
+              <a href="{{ event.get_absolute_url }}">{{ event.title }}</a>
             </h5>
-            <p class="small text-muted mb-3 flex-grow-1">
+            <p class="mv-card-desc">
               {{ event.description|truncatewords:20 }}
             </p>
-            <div class="d-flex align-items-center justify-content-between small text-dim pt-3 border-top" style="border-color: var(--mv-border) !important;">
-              <span><i class="bi bi-geo-alt me-1 text-danger"></i> {{ event.venue }}</span>
-              <span>
+
+            <div class="mv-card-meta">
+              <span class="mv-card-meta-venue">
+                <i class="bi bi-geo-alt text-danger"></i> {{ event.venue }}
+              </span>
+              <span class="mv-card-meta-seats">
                 {% if event.is_full %}
                   <span class="text-danger fw-semibold">Event Full</span>
                 {% else %}
-                  <span class="text-success fw-semibold">{{ event.remaining_seats }} left</span>
+                  <i class="bi bi-people me-1"></i> {{ event.remaining_seats }} left
                 {% endif %}
               </span>
             </div>
-            <div class="mt-3">
-              <a href="{{ event.get_absolute_url }}" class="btn btn-mv-outline w-100">View Event & Register</a>
-            </div>
+
+            <a href="{{ event.get_absolute_url }}" class="btn-card-action">
+              View Event & Register &rarr;
+            </a>
           </div>
         </div>
       </div>
     {% empty %}
       <div class="col-12">
-        <div class="mv-card p-5 text-center text-muted">
-          <i class="bi bi-search fs-1 mb-3 text-dim d-block"></i>
-          <h4 class="text-white">No Matching Events Found</h4>
+        <div class="mv-card p-5 text-center text-muted" style="border-radius: 20px; background: #fffdf9; border: 1.8px solid #edd5c0;">
+          <i class="bi bi-search fs-1 mb-3 d-block" style="color: #df682e;"></i>
+          <h4 style="color: #2c231e;">No Matching Events Found</h4>
           <p class="small text-muted mb-3">Try adjusting your keyword, category, or timeframe filters.</p>
-          <a href="{% url 'public:explore' %}" class="btn btn-mv-outline">Reset All Filters</a>
+          <a href="{% url 'public:explore' %}" class="btn btn-card-action d-inline-block w-auto px-4">Reset All Filters</a>
         </div>
       </div>
     {% endfor %}
@@ -129,35 +575,36 @@
       <ul class="pagination justify-content-center">
         {% if page_obj.has_previous %}
           <li class="page-item">
-            <a class="page-link" href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}date={{ date_filter }}&avail={{ avail_filter }}&sort={{ sort_by }}&page={{ page_obj.previous_page_number }}">
+            <a class="page-link" style="border-color: #edd5c0; color: #df682e;" href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}date={{ date_filter }}&avail={{ avail_filter }}&sort={{ sort_by }}&page={{ page_obj.previous_page_number }}">
               <i class="bi bi-chevron-left"></i> Previous
             </a>
           </li>
         {% else %}
-          <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-left"></i> Previous</span></li>
+          <li class="page-item disabled"><span class="page-link" style="border-color: #edd5c0;"><i class="bi bi-chevron-left"></i> Previous</span></li>
         {% endif %}
 
         {% for num in page_obj.paginator.page_range %}
           {% if page_obj.number == num %}
-            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            <li class="page-item active"><span class="page-link" style="background: #df682e; border-color: #df682e; color: white;">{{ num }}</span></li>
           {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
             <li class="page-item">
-              <a class="page-link" href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}date={{ date_filter }}&avail={{ avail_filter }}&sort={{ sort_by }}&page={{ num }}">{{ num }}</a>
+              <a class="page-link" style="border-color: #edd5c0; color: #2c231e;" href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}date={{ date_filter }}&avail={{ avail_filter }}&sort={{ sort_by }}&page={{ num }}">{{ num }}</a>
             </li>
           {% endif %}
         {% endfor %}
 
         {% if page_obj.has_next %}
           <li class="page-item">
-            <a class="page-link" href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}date={{ date_filter }}&avail={{ avail_filter }}&sort={{ sort_by }}&page={{ page_obj.next_page_number }}">
+            <a class="page-link" style="border-color: #edd5c0; color: #df682e;" href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}date={{ date_filter }}&avail={{ avail_filter }}&sort={{ sort_by }}&page={{ page_obj.next_page_number }}">
               Next <i class="bi bi-chevron-right"></i>
             </a>
           </li>
         {% else %}
-          <li class="page-item disabled"><span class="page-link">Next <i class="bi bi-chevron-right"></i></span></li>
+          <li class="page-item disabled"><span class="page-link" style="border-color: #edd5c0;">Next <i class="bi bi-chevron-right"></i></span></li>
         {% endif %}
       </ul>
     </nav>
   {% endif %}
+
 </div>
 {% endblock %}

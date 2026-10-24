@@ -3,71 +3,491 @@
 
 {% block title %}MUJVERSE — Your Campus. Your Universe.{% endblock %}
 
+{% block extra_css %}
+<style>
+  /* Guaranteed Inlined Critical Hero Section Styles */
+  .mv-hero-ref {
+    position: relative;
+    background-color: #faf5ee;
+    background-size: cover;
+    background-position: center 36%;
+    background-repeat: no-repeat;
+    min-height: 560px;
+    overflow: hidden;
+    padding: 3rem 0 3.5rem;
+    border-bottom: 1.5px solid #ecd8c5;
+  }
+  .mv-hero-sketch-overlay {
+    position: absolute;
+    inset: 0;
+    background: 
+      linear-gradient(180deg, rgba(255, 253, 249, 0.45) 0%, transparent 12%, transparent 86%, #ffffff 100%),
+      linear-gradient(90deg, 
+        rgba(254, 251, 246, 0.96) 0%, 
+        rgba(254, 251, 246, 0.91) 34%, 
+        rgba(254, 251, 246, 0.58) 55%, 
+        rgba(254, 251, 246, 0.16) 76%, 
+        rgba(254, 251, 246, 0.04) 100%
+      );
+    pointer-events: none;
+    z-index: 1;
+  }
+  .mv-hero-content-wrap {
+    position: relative;
+    z-index: 3;
+  }
+  .mv-botanical-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0.95;
+  }
+  .mv-botanical-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0.95;
+  }
+  .mv-ref-hero-title {
+    font-family: 'Patrick Hand', 'Caveat', cursive, sans-serif !important;
+    margin-bottom: 0.85rem;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    display: inline-block;
+    position: relative;
+  }
+  .mv-title-dark {
+    color: #2b221d !important;
+    font-size: 4.4rem;
+    font-weight: 700;
+    display: inline-block;
+  }
+  .mv-title-orange {
+    color: #df682e !important;
+    font-size: 4.4rem;
+    font-weight: 700;
+    display: inline-block;
+    position: relative;
+  }
+  .mv-doodle-paperplane {
+    position: absolute;
+    top: -12px;
+    left: 310px;
+    z-index: 4;
+    pointer-events: none;
+    animation: floatPlane 6s ease-in-out infinite;
+  }
+  @keyframes floatPlane {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-6px) rotate(2deg); }
+  }
+  .mv-doodle-heart {
+    position: absolute;
+    left: -24px;
+    top: 48%;
+    pointer-events: none;
+    color: #df682e;
+  }
+  .mv-doodle-sunburst {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 0.4rem;
+    margin-top: -0.6rem;
+  }
+  .mv-ref-hero-subtitle {
+    color: #483d36 !important;
+    font-size: 1.08rem;
+    line-height: 1.62;
+    max-width: 530px;
+    font-weight: 500;
+    margin-bottom: 1.85rem;
+  }
+  .mv-ref-search-form {
+    max-width: 560px;
+  }
+  .mv-ref-search-container {
+    background: #ffffff !important;
+    border: 1.8px solid #edd5c0 !important;
+    border-radius: 9999px !important;
+    padding: 0.35rem 0.45rem 0.35rem 1.35rem;
+    box-shadow: 0 8px 24px rgba(180, 100, 40, 0.08), 0 2px 6px rgba(0,0,0,0.02) !important;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    transition: all 0.25s ease;
+  }
+  .mv-ref-search-container:focus-within {
+    border-color: #df682e !important;
+    box-shadow: 0 8px 28px rgba(223, 104, 46, 0.2) !important;
+  }
+  .mv-ref-search-icon {
+    color: #7b6f67 !important;
+    font-size: 1.15rem;
+    display: flex;
+    align-items: center;
+  }
+  .mv-ref-search-input {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0.65rem 0 !important;
+    font-size: 0.96rem !important;
+    color: #2b221d !important;
+    flex: 1;
+    outline: none !important;
+  }
+  .mv-ref-search-input::placeholder {
+    color: #7d7067 !important;
+    font-weight: 450;
+  }
+  .mv-ref-search-btn {
+    background: linear-gradient(135deg, #f07e43 0%, #e16629 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 9999px !important;
+    padding: 0.72rem 1.7rem !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    box-shadow: 0 3px 12px rgba(225, 102, 41, 0.35) !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    white-space: nowrap;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .mv-ref-search-btn:hover {
+    background: linear-gradient(135deg, #f38a52 0%, #d8591c 100%) !important;
+    box-shadow: 0 4px 18px rgba(225, 102, 41, 0.45) !important;
+    transform: translateY(-1px);
+    color: #ffffff !important;
+  }
+  .mv-ref-badges-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.35rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #5a4f47 !important;
+    margin-top: 1.4rem;
+  }
+  .mv-ref-badge-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .mv-ref-badge-item .badge-icon {
+    color: #df682e !important;
+    font-size: 1.05rem;
+  }
+  .mv-ref-qr-card-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 320px;
+  }
+  .mv-ref-qr-card {
+    background: rgba(255, 253, 249, 0.95) !important;
+    border: 1.8px solid #edd5c0 !important;
+    border-radius: 22px !important;
+    padding: 1.85rem 1.75rem 1.6rem !important;
+    box-shadow: 0 12px 36px rgba(180, 100, 40, 0.1), 0 2px 8px rgba(0,0,0,0.03) !important;
+    text-align: center;
+    position: relative;
+    backdrop-filter: blur(8px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .mv-ref-qr-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 44px rgba(180, 100, 40, 0.15) !important;
+  }
+  .mv-ticket-icon-box {
+    margin-bottom: 0.75rem;
+    display: inline-block;
+  }
+  .mv-qr-card-title {
+    font-family: 'Patrick Hand', 'Outfit', sans-serif !important;
+    font-size: 1.5rem !important;
+    color: #2c231e !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.3rem;
+  }
+  .mv-doodle-stroke {
+    width: 48px;
+    height: 3px;
+    background: #ecd4c1;
+    border-radius: 99px;
+    margin: 0 auto 0.6rem;
+  }
+  .mv-qr-card-desc {
+    font-size: 0.88rem !important;
+    line-height: 1.45;
+    color: #695e56 !important;
+    margin-bottom: 1.3rem;
+  }
+  .mv-qr-card-btn {
+    display: block;
+    width: 100%;
+    background: #fdf1e4 !important;
+    border: 1.5px solid #ebd0bc !important;
+    color: #433329 !important;
+    border-radius: 12px !important;
+    padding: 0.65rem 1.25rem !important;
+    font-weight: 600 !important;
+    font-size: 0.92rem !important;
+    text-decoration: none !important;
+    transition: all 0.2s;
+  }
+  .mv-qr-card-btn:hover {
+    background: #fbe6d3 !important;
+    color: #2c231e !important;
+    border-color: #df682e !important;
+    transform: translateY(-1px);
+  }
+  .mv-ref-books-accent {
+    position: absolute;
+    right: -24px;
+    bottom: -32px;
+    display: flex;
+    align-items: flex-end;
+    gap: 0.4rem;
+    z-index: 5;
+    pointer-events: none;
+  }
+  .mv-books-text {
+    font-family: 'Patrick Hand', 'Caveat', cursive !important;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #2c231e;
+    line-height: 1.1;
+    text-align: right;
+    transform: rotate(-4deg);
+  }
+
+  @media (max-width: 991.98px) {
+    .mv-title-dark, .mv-title-orange {
+      font-size: 3.2rem;
+    }
+    .mv-ref-qr-card-wrapper {
+      margin-top: 2.5rem;
+    }
+    .mv-hero-sketch-overlay {
+      background: linear-gradient(180deg, rgba(254, 251, 246, 0.94) 0%, rgba(254, 251, 246, 0.88) 100%) !important;
+    }
+    .mv-doodle-paperplane {
+      left: 240px;
+    }
+  }
+  @media (max-width: 575.98px) {
+    .mv-title-dark, .mv-title-orange {
+      font-size: 2.6rem;
+    }
+    .mv-ref-search-container {
+      flex-direction: column;
+      align-items: stretch;
+      border-radius: 16px;
+      padding: 0.75rem;
+    }
+    .mv-ref-search-btn {
+      justify-content: center;
+    }
+    .mv-doodle-paperplane {
+      display: none;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<!-- ── Hero Section with MUJ Campus Background & Sunset Glow ── -->
-<section class="mv-hero">
-  <div class="container position-relative" style="z-index: 2;">
-    <div class="row align-items-center g-5">
-      <div class="col-lg-7">
-        <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3" style="background: var(--mv-orange-subtle); border: 1.5px solid var(--mv-border);">
-          <span class="badge text-white" style="background: var(--mv-orange-primary) !important;">MUJ Official</span>
-          <span class="small fw-semibold" style="color: var(--mv-orange-deep);">Manipal University Jaipur Campus Portal</span>
+<!-- ── Hand-Drawn Sketch Hero Section with MUJ Campus Background ── -->
+<section class="mv-hero-ref" style="background-image: url('{% static 'images/muj_sketch_bg.jpg' %}');">
+  <!-- Campus Illustration Soft Text Wash -->
+  <div class="mv-hero-sketch-overlay"></div>
+
+  <!-- Hand-Drawn Botanical Framing Doodles (Top-Left) -->
+  <div class="mv-botanical-top" aria-hidden="true">
+    <svg width="220" height="200" viewBox="0 0 220 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Main Branch Stem -->
+      <path d="M-20 10 C 20 40, 60 70, 110 50 C 140 38, 170 15, 195 -10" stroke="#7a8c53" stroke-width="3" stroke-linecap="round" fill="none"/>
+      <path d="M40 50 C 70 85, 120 110, 175 95" stroke="#7a8c53" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      <!-- Soft Leaves -->
+      <path d="M35 30 C 50 15, 75 25, 65 45 C 50 55, 30 45, 35 30 Z" fill="#9db06e" opacity="0.85"/>
+      <path d="M75 55 C 95 40, 120 50, 110 70 C 95 80, 70 70, 75 55 Z" fill="#88a05c" opacity="0.9"/>
+      <path d="M115 45 C 135 30, 160 40, 150 60 C 135 70, 110 60, 115 45 Z" fill="#a4b873" opacity="0.85"/>
+      <path d="M145 20 C 165 5, 190 15, 180 35 C 165 45, 140 35, 145 20 Z" fill="#93a864" opacity="0.85"/>
+      <!-- Small Yellow & Orange Blossoms -->
+      <circle cx="68" cy="85" r="7" fill="#f8c146" opacity="0.9"/>
+      <circle cx="68" cy="85" r="3" fill="#e8773e"/>
+      <circle cx="125" cy="98" r="8" fill="#f9cb55" opacity="0.9"/>
+      <circle cx="125" cy="98" r="3.5" fill="#e8773e"/>
+      <circle cx="178" cy="92" r="6" fill="#f8ba3d" opacity="0.9"/>
+    </svg>
+  </div>
+
+  <!-- Hand-Drawn Botanical Framing Doodles (Bottom-Left) -->
+  <div class="mv-botanical-bottom" aria-hidden="true">
+    <svg width="180" height="150" viewBox="0 0 180 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M-15 140 C 30 110, 80 120, 120 85 C 145 65, 160 30, 170 -10" stroke="#7a8c53" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      <path d="M25 125 C 40 100, 65 110, 55 130 C 40 140, 20 135, 25 125 Z" fill="#8ea460" opacity="0.85"/>
+      <path d="M75 105 C 95 85, 120 95, 110 115 C 95 125, 70 120, 75 105 Z" fill="#a2b771" opacity="0.85"/>
+      <path d="M125 75 C 145 55, 170 65, 160 85 C 145 95, 120 90, 125 75 Z" fill="#889f59" opacity="0.9"/>
+      <circle cx="48" cy="96" r="6.5" fill="#f8c146" opacity="0.9"/>
+      <circle cx="48" cy="96" r="2.8" fill="#e8773e"/>
+    </svg>
+  </div>
+
+  <div class="container position-relative mv-hero-content-wrap">
+    <div class="row align-items-center g-4">
+      
+      <!-- ── Left Column: Hand-Lettered Headlines & Search ── -->
+      <div class="col-lg-7 pt-2 pb-3">
+        <div class="mv-hero-heading-group position-relative">
+          
+          <!-- Flying Sketched Paper Airplane Doodle -->
+          <div class="mv-doodle-paperplane" aria-hidden="true">
+            <svg width="48" height="42" viewBox="0 0 54 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Flight dotted arc -->
+              <path d="M4 44 C 12 36, 18 32, 28 26" stroke="#e88950" stroke-width="1.8" stroke-dasharray="3 3" stroke-linecap="round"/>
+              <!-- Paper Plane -->
+              <path d="M18 24 L 50 4 L 32 40 L 26 27 Z" fill="#fce5d4" stroke="#d8692c" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M50 4 L 26 27 L 34 26 Z" fill="#f6cca9" stroke="#d8692c" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M26 27 L 22 36 L 27 31" stroke="#d8692c" stroke-width="1.6" stroke-linejoin="round"/>
+            </svg>
+          </div>
+
+          <!-- Small Heart Doodle -->
+          <div class="mv-doodle-heart" aria-hidden="true">
+            <svg width="22" height="20" viewBox="0 0 24 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 20 C 12 20, 2 13.5, 2 7.2 C 2 3.8, 4.8 1.5, 8 1.5 C 10.2 1.5, 11.5 2.6, 12 3.8 C 12.5 2.6, 13.8 1.5, 16 1.5 C 19.2 1.5, 22 3.8, 22 7.2 C 22 13.5, 12 20, 12 20 Z" stroke="#e07238" stroke-width="2" stroke-linecap="round" fill="none"/>
+            </svg>
+          </div>
+
+          <!-- Main Hand-Drawn Headings -->
+          <h1 class="mv-ref-hero-title">
+            <span class="mv-title-dark">Your Campus.</span><br>
+            <span class="mv-title-orange">Your Universe.</span>
+            <!-- Sunburst Rays Doodle -->
+            <span class="mv-doodle-sunburst" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <line x1="4" y1="20" x2="1" y2="24" stroke="#e07238" stroke-width="2.2" stroke-linecap="round"/>
+                <line x1="8" y1="12" x2="3" y2="10" stroke="#e07238" stroke-width="2.2" stroke-linecap="round"/>
+                <line x1="16" y1="6" x2="15" y2="1" stroke="#e07238" stroke-width="2.2" stroke-linecap="round"/>
+              </svg>
+            </span>
+          </h1>
         </div>
-        <h1 class="mv-hero-title">
-          Your Campus. <br><span class="gradient-text">Your Universe.</span>
-        </h1>
-        <p class="mv-hero-subtitle">
+
+        <p class="mv-ref-hero-subtitle">
           Discover hackathons, cultural festivals, tech workshops, sports tournaments, and club meets across Manipal University Jaipur — all in one centralized hub.
         </p>
 
-        <!-- Search Bar -->
-        <form action="{% url 'public:explore' %}" method="get" class="mb-4">
-          <div class="row g-2">
-            <div class="col-md-8">
-              <div class="input-group input-group-lg shadow-sm">
-                <span class="input-group-text bg-white border-end-0" style="border-color: var(--mv-border); color: var(--mv-orange-primary);"><i class="bi bi-search"></i></span>
-                <input type="text" name="q" class="form-control border-start-0" placeholder="Search events by title, keyword, or venue..." aria-label="Search events">
-              </div>
-            </div>
-            <div class="col-md-4">
-              <button type="submit" class="btn btn-mv-primary btn-lg w-100">
-                Find Events
-              </button>
-            </div>
+        <!-- Search Bar: White Capsule with Warm Bronze Icon and Orange Pill Button -->
+        <form action="{% url 'public:explore' %}" method="get" class="mv-ref-search-form mb-4" role="search">
+          <div class="mv-ref-search-container">
+            <span class="mv-ref-search-icon">
+              <i class="bi bi-search"></i>
+            </span>
+            <input 
+              type="text" 
+              name="q" 
+              class="mv-ref-search-input" 
+              placeholder="Search events by title, keyword, or venue..." 
+              aria-label="Search events by title, keyword, or venue"
+              autocomplete="off"
+            >
+            <button type="submit" class="mv-ref-search-btn">
+              <span>Find Events</span> <i class="bi bi-arrow-right"></i>
+            </button>
           </div>
         </form>
 
-        <div class="d-flex flex-wrap gap-3 align-items-center small" style="color: var(--mv-text-muted);">
-          <span><i class="bi bi-check2-circle me-1" style="color: var(--mv-emerald-success);"></i> 100% Free Registrations</span>
-          <span><i class="bi bi-qr-code me-1" style="color: var(--mv-orange-primary);"></i> Instant QR Ticket Generation</span>
-          <span><i class="bi bi-shield-check me-1" style="color: var(--mv-orange-deep);"></i> Verified MUJ Clubs</span>
-        </div>
-      </div>
-
-      <!-- Campus Image Card Preview -->
-      <div class="col-lg-5">
-        <div class="hero-campus-banner">
-          <img src="{% static 'images/muj_campus_hero.png' %}" alt="Manipal University Jaipur Campus" class="hero-campus-img">
-          <div class="p-4 bg-white">
-            <div class="d-flex align-items-center justify-content-between mb-2">
-              <span class="badge" style="background: var(--mv-orange-subtle); color: var(--mv-orange-deep); border: 1px solid var(--mv-border); font-weight: 700;">
-                <i class="bi bi-geo-alt-fill me-1"></i> MUJ Main Campus
-              </span>
-              <span class="small text-muted"><i class="bi bi-sun-fill text-warning me-1"></i> Jaipur, Rajasthan</span>
-            </div>
-            <h5 class="fw-bold mb-1" style="color: var(--mv-text-high);">The Heart of Student Life</h5>
-            <p class="small text-muted mb-3">Join thousands of MUJ students attending live campus events, fests, and competitions.</p>
-            {% if not user.is_authenticated %}
-              <div class="d-flex gap-2">
-                <a href="{% url 'accounts:register' %}" class="btn btn-mv-primary btn-sm flex-grow-1">Student Registration</a>
-                <a href="{% url 'accounts:login' %}" class="btn btn-mv-outline btn-sm">Log In</a>
-              </div>
-            {% else %}
-              <a href="{% url 'accounts:dashboard_redirect' %}" class="btn btn-mv-outline btn-sm w-100">Go to My Dashboard &rarr;</a>
-            {% endif %}
+        <!-- Trust Badges Strip -->
+        <div class="mv-ref-badges-strip">
+          <div class="mv-ref-badge-item">
+            <span class="badge-icon"><i class="bi bi-check2-circle"></i></span>
+            <span>100% Free Registrations</span>
+          </div>
+          <div class="mv-ref-badge-item">
+            <span class="badge-icon"><i class="bi bi-qr-code"></i></span>
+            <span>Instant QR Ticket Generation</span>
+          </div>
+          <div class="mv-ref-badge-item">
+            <span class="badge-icon"><i class="bi bi-shield-check"></i></span>
+            <span>Verified MUJ Clubs</span>
           </div>
         </div>
       </div>
+
+      <!-- ── Right Column: Floating Sketched One-Click QR Pass Card ── -->
+      <div class="col-lg-5 d-flex justify-content-center justify-content-lg-end">
+        <div class="mv-ref-qr-card-wrapper">
+          
+          <div class="mv-ref-qr-card">
+            <!-- Sketched Perforated Ticket Icon -->
+            <div class="mv-ticket-icon-box" aria-hidden="true">
+              <svg width="60" height="38" viewBox="0 0 60 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Outer dashed ticket rectangle -->
+                <rect x="2" y="2" width="56" height="34" rx="6" stroke="#d97434" stroke-width="2" stroke-dasharray="4 3" fill="#fdfaf6"/>
+                <!-- Left and Right Notch cutouts -->
+                <circle cx="2" cy="19" r="5" fill="#faf5ee" stroke="#d97434" stroke-width="1.8"/>
+                <circle cx="58" cy="19" r="5" fill="#faf5ee" stroke="#d97434" stroke-width="1.8"/>
+                <!-- Center perforation line & number 0 / star -->
+                <line x1="30" y1="4" x2="30" y2="34" stroke="#e8a87b" stroke-width="1.5" stroke-dasharray="2 2"/>
+                <rect x="26" y="14" width="8" height="10" rx="3" stroke="#d97434" stroke-width="1.8" fill="#faede1"/>
+                <circle cx="30" cy="19" r="1.5" fill="#d97434"/>
+                <!-- Little sparkle rays on top of ticket -->
+                <line x1="16" y1="-3" x2="16" y2="0" stroke="#e07d42" stroke-width="1.6" stroke-linecap="round"/>
+                <line x1="44" y1="-3" x2="44" y2="0" stroke="#e07d42" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+            </div>
+
+            <h3 class="mv-qr-card-title">One-Click QR Pass</h3>
+            <div class="mv-doodle-stroke" aria-hidden="true"></div>
+            
+            <p class="mv-qr-card-desc">
+              Access your events and clubs with a single scan.
+            </p>
+
+            {% if user.is_authenticated %}
+              <a href="{% url 'accounts:dashboard_redirect' %}" class="mv-qr-card-btn">
+                View My Dashboard
+              </a>
+            {% else %}
+              <a href="{% url 'accounts:dashboard_redirect' %}" class="mv-qr-card-btn">
+                View My Dashboard
+              </a>
+            {% endif %}
+          </div>
+
+          <!-- Bottom Right Accent: Sketched Books Stack & "Good Vibes Only" -->
+          <div class="mv-ref-books-accent" aria-hidden="true">
+            <div class="mv-books-text">
+              Good<br>Vibes<br>Only
+            </div>
+            <div class="mv-books-svg">
+              <svg width="68" height="58" viewBox="0 0 68 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Bottom Book (Pink/Coral) -->
+                <rect x="10" y="38" width="54" height="14" rx="2" fill="#f7b7a3" stroke="#3b2e27" stroke-width="1.8"/>
+                <line x1="14" y1="45" x2="60" y2="45" stroke="#3b2e27" stroke-width="1.4"/>
+                <!-- Middle Book (Mint Green) -->
+                <rect x="14" y="24" width="50" height="14" rx="2" fill="#a8d5ba" stroke="#3b2e27" stroke-width="1.8"/>
+                <line x1="18" y1="31" x2="60" y2="31" stroke="#3b2e27" stroke-width="1.4"/>
+                <!-- Top Book (Golden Yellow) -->
+                <rect x="18" y="10" width="46" height="14" rx="2" fill="#fed876" stroke="#3b2e27" stroke-width="1.8"/>
+                <line x1="22" y1="17" x2="60" y2="17" stroke="#3b2e27" stroke-width="1.4"/>
+                <!-- Book spines bookmark ribbon -->
+                <path d="M26 10 L 26 2 L 30 5 L 34 2 L 34 10" fill="#e86e34" stroke="#3b2e27" stroke-width="1.2"/>
+              </svg>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   </div>
 </section>

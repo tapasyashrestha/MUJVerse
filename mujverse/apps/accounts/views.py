@@ -14,6 +14,7 @@ from django.contrib.auth.views import (
     PasswordResetCompleteView,
 )
 from django.urls import reverse_lazy
+from django.contrib.auth.models import User
 from .forms import StudentRegistrationForm, UserLoginForm, UserProfileUpdateForm
 from .models import RoleChoices
 
@@ -80,6 +81,28 @@ def logout_view(request):
     if request.user.is_authenticated:
         logout(request)
         messages.info(request, "You have been logged out successfully.")
+    return redirect("public:home")
+
+
+def demo_login_organizer_view(request):
+    """
+    Instantly logs into the seeded Demo Organizer account.
+    """
+    user = User.objects.filter(username="demo_organizer").first()
+    if user:
+        login(request, user)
+        messages.success(request, "Welcome! Logged in as Demo Organizer.")
+    return redirect("public:home")
+
+
+def demo_login_student_view(request):
+    """
+    Instantly logs into the seeded Demo Student account.
+    """
+    user = User.objects.filter(username="demo_student").first()
+    if user:
+        login(request, user)
+        messages.success(request, "Welcome! Logged in as Demo Student.")
     return redirect("public:home")
 
 

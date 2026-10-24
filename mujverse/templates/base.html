@@ -7,18 +7,155 @@
   <title>{% block title %}MUJVERSE — Your Campus. Your Universe.{% endblock %}</title>
   <meta name="description" content="{% block meta_description %}MUJ Campus Events & Experiences Platform for Manipal University Jaipur. Discover events, register for free, and access QR tickets.{% endblock %}">
 
-  <!-- Google Fonts: Outfit (Headings) & Inter (Body) -->
+  <!-- Google Fonts: Outfit (Headings), Inter (Body), Patrick Hand & Caveat (Hand-drawn Sketch Display) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@400;500;600;700&family=Kalam:wght@700&family=Outfit:wght@500;600;700;800&family=Patrick+Hand&display=swap" rel="stylesheet">
 
   <!-- Bootstrap 5.3 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-  <!-- MUJVERSE Custom Theme CSS -->
-  <link rel="stylesheet" href="{% static 'css/mujverse.css' %}">
+  <!-- MUJVERSE Custom Theme CSS (with cache buster) -->
+  <link rel="stylesheet" href="{% static 'css/mujverse.css' %}?v=20261024_02">
+  <style>
+    /* Critical Navbar Styles for Instant Rendering */
+    .mv-navbar {
+      background: rgba(255, 253, 249, 0.96) !important;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1.5px solid #f0e1d1 !important;
+      box-shadow: 0 2px 12px rgba(180, 100, 40, 0.04) !important;
+      padding: 0.75rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 1030;
+    }
+    .mv-brand {
+      font-family: 'Outfit', sans-serif !important;
+      font-weight: 800;
+      font-size: 1.45rem;
+      letter-spacing: -0.02em;
+      color: #2c231e !important;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+    .mv-rocket-icon {
+      color: #ea6f32 !important;
+      font-size: 1.35rem;
+    }
+    .mv-brand-text {
+      font-weight: 800;
+      color: #2c231e;
+    }
+    .mv-brand .brand-badge {
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 0.18rem 0.55rem;
+      border-radius: 6px;
+      background: #ea6f32 !important;
+      color: #ffffff !important;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-left: 0.15rem;
+      box-shadow: 0 2px 6px rgba(234, 111, 50, 0.25);
+    }
+    .mv-nav-link {
+      color: #3b322c !important;
+      font-weight: 600 !important;
+      font-size: 0.95rem !important;
+      padding: 0.5rem 0.95rem !important;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .mv-nav-link:hover {
+      color: #ea6f32 !important;
+      background: #faece1 !important;
+    }
+    .mv-nav-link.active {
+      color: #ea6f32 !important;
+      background: transparent !important;
+    }
+    .mv-nav-link.active::after {
+      content: "";
+      position: absolute;
+      bottom: 2px;
+      left: 12%;
+      right: 12%;
+      height: 2.5px;
+      background: #ea6f32;
+      border-radius: 99px;
+    }
+    .btn-nav-bell {
+      width: 40px;
+      height: 40px;
+      border-radius: 50% !important;
+      background: #faede3 !important;
+      color: #df682e !important;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: none !important;
+      font-size: 1.15rem;
+      position: relative;
+      text-decoration: none;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .btn-nav-bell:hover {
+      background: #f7dfce !important;
+      color: #cc541b !important;
+      transform: scale(1.05);
+    }
+    .btn-nav-organizer {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.42rem 1.15rem !important;
+      border-radius: 9999px !important;
+      border: 1.5px solid #3c322b !important;
+      color: #3c322b !important;
+      background: transparent !important;
+      font-weight: 600 !important;
+      font-size: 0.88rem !important;
+      text-decoration: none !important;
+      transition: all 0.2s;
+    }
+    .btn-nav-organizer:hover {
+      background: #3c322b !important;
+      color: #ffffff !important;
+      transform: translateY(-1px);
+    }
+    .btn-nav-user-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.45rem 1.25rem !important;
+      border-radius: 9999px !important;
+      background: linear-gradient(135deg, #f07e43 0%, #e16629 100%) !important;
+      color: #ffffff !important;
+      font-weight: 600 !important;
+      font-size: 0.88rem !important;
+      border: none !important;
+      box-shadow: 0 3px 10px rgba(225, 102, 41, 0.28) !important;
+      transition: all 0.2s;
+    }
+    .btn-nav-user-pill:hover {
+      background: linear-gradient(135deg, #f38a52 0%, #d8591c 100%) !important;
+      box-shadow: 0 4px 14px rgba(225, 102, 41, 0.4) !important;
+      transform: translateY(-1px);
+    }
+    .mv-user-dropdown-menu {
+      background: #fffdf9 !important;
+      border: 1.5px solid #ecd8c5 !important;
+      border-radius: 14px !important;
+      box-shadow: 0 10px 30px rgba(180, 100, 40, 0.12) !important;
+      min-width: 230px;
+    }
+  </style>
   {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -27,8 +164,8 @@
   <nav class="navbar navbar-expand-lg mv-navbar">
     <div class="container">
       <a class="navbar-brand mv-brand" href="{% url 'public:home' %}">
-        <i class="bi bi-rocket-takeoff-fill text-warning" style="color: var(--mv-orange-primary) !important;"></i>
-        <span>MUJ<span style="color: var(--mv-orange-primary) !important;">VERSE</span></span>
+        <i class="bi bi-rocket-takeoff-fill mv-rocket-icon"></i>
+        <span class="mv-brand-text">MUJVERSE</span>
         <span class="brand-badge">MUJ</span>
       </a>
 
@@ -37,9 +174,9 @@
       </button>
 
       <div class="collapse navbar-collapse" id="mujverseNav">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <a class="nav-link mv-nav-link" href="{% url 'public:explore' %}"><i class="bi bi-compass me-1"></i> Explore Events</a>
+            <a class="nav-link mv-nav-link {% if request.resolver_match.url_name == 'explore' %}active{% endif %}" href="{% url 'public:explore' %}">Explore Events</a>
           </li>
           <li class="nav-item">
             <a class="nav-link mv-nav-link" href="{% url 'public:categories' %}"><i class="bi bi-grid me-1"></i> Categories</a>
@@ -53,62 +190,40 @@
         </ul>
 
         <div class="d-flex align-items-center gap-2">
-          {% if user.is_authenticated %}
-            <!-- Notifications Bell -->
-            <div class="dropdown">
-              <a href="{% url 'notifications:list' %}" class="btn notification-bell-btn" title="Notifications">
-                <i class="bi bi-bell"></i>
-                {% if unread_notifications_count > 0 %}
-                  <span class="notification-counter">{{ unread_notifications_count }}</span>
-                {% endif %}
-              </a>
-            </div>
-
-            <!-- Role Dashboard Quick Link -->
-            {% if user.is_superuser or user.profile.is_admin %}
-              <a href="{% url 'platform_admin:dashboard' %}" class="btn btn-sm btn-outline-danger">
-                <i class="bi bi-shield-lock-fill me-1"></i> Admin Panel
-              </a>
-            {% elif user.profile.is_organizer %}
-              <a href="{% url 'organizer:dashboard' %}" class="btn btn-sm btn-mv-outline">
-                <i class="bi bi-speedometer2 me-1"></i> Organizer Portal
-              </a>
-            {% else %}
-              <a href="{% url 'student:dashboard' %}" class="btn btn-sm btn-mv-outline">
-                <i class="bi bi-ticket-perforated me-1"></i> My Tickets
-              </a>
+          <!-- Notification Bell -->
+          <a href="{% if user.is_authenticated %}{% url 'notifications:list' %}{% else %}{% url 'accounts:login' %}{% endif %}" class="btn-nav-bell" title="Notifications">
+            <i class="bi bi-bell"></i>
+            {% if unread_notifications_count > 0 %}
+              <span class="notification-counter">{{ unread_notifications_count }}</span>
             {% endif %}
+          </a>
 
-            <!-- User Profile Dropdown -->
+          <!-- Organizer Portal Button -->
+          <a href="{% if user.is_authenticated and user.profile.is_organizer %}{% url 'organizer:dashboard' %}{% elif user.is_authenticated %}{% url 'accounts:dashboard_redirect' %}{% else %}{% url 'accounts:demo_login_organizer' %}{% endif %}" class="btn-nav-organizer" title="Access Campus Organizer Portal">
+            <i class="bi bi-emoji-smile"></i>
+            <span>Organizer Portal</span>
+          </a>
+
+          <!-- User Pill / Demo Organizer Dropdown -->
+          {% if user.is_authenticated %}
             <div class="dropdown">
-              <button class="btn btn-mv-outline dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-person-circle fs-5"></i>
-                <span class="d-none d-md-inline">{{ user.profile.display_name|default:user.username }}</span>
-                {% if user.is_superuser or user.profile.is_admin %}
-                  <span class="badge badge-role-admin">Admin</span>
-                {% elif user.profile.is_organizer %}
-                  <span class="badge badge-role-organizer">Organizer</span>
-                {% else %}
-                  <span class="badge badge-role-student">Student</span>
-                {% endif %}
+              <button class="btn-nav-user-pill dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-fill"></i>
+                <span>{{ user.profile.display_name|default:user.username }}</span>
               </button>
-              <ul class="dropdown-menu dropdown-menu-end shadow-lg" style="background: var(--mv-bg-surface); border: 1px solid var(--mv-border);">
+              <ul class="dropdown-menu dropdown-menu-end shadow-lg mv-user-dropdown-menu">
                 <li>
-                  <div class="px-3 py-2 border-bottom" style="border-color: var(--mv-border-light) !important;">
-                    <div class="fw-bold" style="color: var(--mv-text-high);">{{ user.profile.display_name|default:user.username }}</div>
+                  <div class="px-3 py-2 border-bottom">
+                    <div class="fw-bold text-dark">{{ user.profile.display_name|default:user.username }}</div>
                     <div class="small text-muted">{{ user.email }}</div>
-                    {% if user.profile.student_identifier %}
-                      <div class="small mt-1" style="color: var(--mv-orange-deep);"><i class="bi bi-card-text me-1"></i> ID: {{ user.profile.student_identifier }}</div>
-                    {% endif %}
+                    <span class="badge mt-1 {% if user.profile.is_organizer %}bg-warning text-dark{% elif user.profile.is_admin %}bg-danger text-white{% else %}bg-primary text-white{% endif %}">
+                      {{ user.profile.get_role_display|default:"Student" }}
+                    </span>
                   </div>
                 </li>
                 <li><a class="dropdown-item py-2" href="{% url 'accounts:dashboard_redirect' %}"><i class="bi bi-grid-1x2 me-2"></i> My Dashboard</a></li>
                 <li><a class="dropdown-item py-2" href="{% url 'accounts:profile' %}"><i class="bi bi-gear me-2"></i> Profile Settings</a></li>
-                {% if user.is_superuser or user.is_staff %}
-                  <li><hr class="dropdown-divider" style="border-color: var(--mv-border);"></li>
-                  <li><a class="dropdown-item py-2 text-warning" href="/admin/" target="_blank"><i class="bi bi-database me-2"></i> Django Admin</a></li>
-                {% endif %}
-                <li><hr class="dropdown-divider" style="border-color: var(--mv-border);"></li>
+                <li><hr class="dropdown-divider"></li>
                 <li>
                   <form action="{% url 'accounts:logout' %}" method="post" class="d-inline">
                     {% csrf_token %}
@@ -117,11 +232,35 @@
                 </li>
               </ul>
             </div>
-
           {% else %}
-            <!-- Unauthenticated Visitor -->
-            <a href="{% url 'accounts:login' %}" class="btn btn-mv-outline">Log In</a>
-            <a href="{% url 'accounts:register' %}" class="btn btn-mv-primary">Sign Up</a>
+            <!-- Demo Organizer Dropdown for Visitors -->
+            <div class="dropdown">
+              <button class="btn-nav-user-pill dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-fill"></i>
+                <span>Demo Organizer</span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow-lg mv-user-dropdown-menu">
+                <li>
+                  <div class="px-3 py-2 border-bottom">
+                    <div class="fw-bold text-dark">Campus Demo Access</div>
+                    <div class="small text-muted">Test organizer & student workflows</div>
+                  </div>
+                </li>
+                <li>
+                  <a class="dropdown-item py-2 fw-semibold text-primary" href="{% url 'accounts:demo_login_organizer' %}">
+                    <i class="bi bi-lightning-charge-fill text-warning me-2"></i> Quick Login: Demo Organizer
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item py-2" href="{% url 'accounts:demo_login_student' %}">
+                    <i class="bi bi-mortarboard me-2"></i> Quick Login: Demo Student
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item py-2" href="{% url 'accounts:login' %}"><i class="bi bi-box-arrow-in-right me-2"></i> Log In</a></li>
+                <li><a class="dropdown-item py-2" href="{% url 'accounts:register' %}"><i class="bi bi-person-plus me-2"></i> Register New Student</a></li>
+              </ul>
+            </div>
           {% endif %}
         </div>
       </div>
