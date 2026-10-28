@@ -1,93 +1,425 @@
 {% extends "base.html" %}
-{% load crispy_forms_tags %}
 
-{% block title %}Student Registration — MUJVERSE{% endblock %}
+{% block title %}Create Account — MUJVERSE{% endblock %}
+
+{% block extra_css %}
+<style>
+  .role-toggle-card {
+    border: 2px solid var(--mv-border, #e5e7eb);
+    border-radius: 12px;
+    padding: 1.15rem 1rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    background: #ffffff;
+    text-align: center;
+  }
+  .role-toggle-card:hover {
+    border-color: #ea6f32;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(234, 111, 50, 0.12);
+  }
+  .role-toggle-card.active {
+    border-color: #ea6f32;
+    background: #fff8f3;
+    box-shadow: 0 4px 14px rgba(234, 111, 50, 0.18);
+  }
+  .role-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+    background: #faece1;
+    color: #ea6f32;
+  }
+  .role-toggle-card.active .role-icon-box {
+    background: #ea6f32;
+    color: #ffffff;
+  }
+  .form-section-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #ea6f32;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--mv-border, #e5e7eb);
+    padding-bottom: 0.4rem;
+  }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="container py-5">
   <div class="row justify-content-center">
-    <div class="col-lg-7 col-md-9">
+    <div class="col-lg-8 col-md-10 col-12">
       <div class="mv-card p-4 p-md-5">
+        
+        <!-- Header -->
         <div class="text-center mb-4">
-          <div class="d-inline-flex p-3 rounded-circle mb-3" style="background: rgba(124, 58, 237, 0.15); border: 1px solid var(--mv-border-violet);">
-            <i class="bi bi-mortarboard-fill fs-2 text-info"></i>
+          <div class="d-inline-flex p-3 rounded-circle mb-3" style="background: rgba(234, 111, 50, 0.12); border: 1.5px solid rgba(234, 111, 50, 0.3);">
+            <i class="bi bi-person-plus-fill fs-2" style="color: #ea6f32;"></i>
           </div>
-          <h2 class="h3 fw-bold">Join MUJVERSE</h2>
-          <p class="text-muted small">
-            Create your student account to discover events, register for free, and get unique QR tickets.
-          </p>
+          <h2 class="h3 fw-bold mb-1">Create Your MUJVERSE Account</h2>
+          <p class="text-muted small">Select your role to start registering for campus events or managing your club</p>
         </div>
 
-        <form method="post" novalidate>
+        <!-- Role Selector Switcher -->
+        <div class="row g-3 mb-4">
+          <div class="col-6">
+            <div class="role-toggle-card {% if selected_role == 'student' %}active{% endif %}" id="studentRoleCard" onclick="switchRole('student')">
+              <div class="role-icon-box">
+                <i class="bi bi-mortarboard-fill"></i>
+              </div>
+              <div class="fw-bold fs-6">Student</div>
+              <div class="small text-muted d-none d-sm-block">Register for events, claim QR passes, & join workshops</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="role-toggle-card {% if selected_role == 'organizer' %}active{% endif %}" id="organizerRoleCard" onclick="switchRole('organizer')">
+              <div class="role-icon-box">
+                <i class="bi bi-people-fill"></i>
+              </div>
+              <div class="fw-bold fs-6">Club Organizer</div>
+              <div class="small text-muted d-none d-sm-block">Represent a verified club, host events, & check in attendees</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alert box for errors or AJAX feedback -->
+        <div id="registerAlert" class="alert d-none" role="alert"></div>
+
+        <!-- ========================================== -->
+        <!-- Form A: Student Registration Form          -->
+        <!-- ========================================== -->
+        <form id="studentRegistrationForm" method="post" action="{% url 'accounts:register' %}" class="{% if selected_role != 'student' %}d-none{% endif %}" novalidate>
           {% csrf_token %}
-          
-          <div class="row g-3 mb-3">
-            <div class="col-md-6">
-              <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
-              {{ form.first_name }}
-              {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors.0 }}</div>{% endif %}
-            </div>
-            <div class="col-md-6">
-              <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
-              {{ form.last_name }}
-              {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors.0 }}</div>{% endif %}
-            </div>
-          </div>
+          <input type="hidden" name="registration_role" value="student">
 
-          <div class="mb-3">
-            <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
-            {{ form.username }}
-            {% if form.username.errors %}<div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>{% endif %}
-          </div>
-
-          <div class="mb-3">
-            <label for="{{ form.email.id_for_label }}" class="form-label">University Email</label>
-            {{ form.email }}
-            <div class="form-text text-dim">Please use your official MUJ email address.</div>
-            {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+          <div class="form-section-title">
+            <i class="bi bi-person-lines-fill me-1"></i> Personal & University Identification
           </div>
 
           <div class="row g-3 mb-3">
             <div class="col-md-6">
-              <label for="{{ form.student_identifier.id_for_label }}" class="form-label">Registration / Student ID</label>
-              {{ form.student_identifier }}
-              <div class="form-text text-dim">e.g. 229301234</div>
-              {% if form.student_identifier.errors %}<div class="text-danger small mt-1">{{ form.student_identifier.errors.0 }}</div>{% endif %}
+              <label for="{{ student_form.full_name.id_for_label }}" class="form-label fw-semibold">
+                {{ student_form.full_name.label }} <span class="text-danger">*</span>
+              </label>
+              {{ student_form.full_name }}
+              {% if student_form.full_name.errors %}<div class="text-danger small mt-1">{{ student_form.full_name.errors.0 }}</div>{% endif %}
             </div>
             <div class="col-md-6">
-              <label for="{{ form.department.id_for_label }}" class="form-label">Department / School</label>
-              {{ form.department }}
-              <div class="form-text text-dim">e.g. CSE, IT, Architecture</div>
-              {% if form.department.errors %}<div class="text-danger small mt-1">{{ form.department.errors.0 }}</div>{% endif %}
+              <label for="{{ student_form.student_identifier.id_for_label }}" class="form-label fw-semibold">
+                {{ student_form.student_identifier.label }} <span class="text-danger">*</span>
+              </label>
+              {{ student_form.student_identifier }}
+              <div class="form-text text-muted small">Must be your unique MUJ registration number.</div>
+              {% if student_form.student_identifier.errors %}<div class="text-danger small mt-1">{{ student_form.student_identifier.errors.0 }}</div>{% endif %}
             </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="{{ student_form.email.id_for_label }}" class="form-label fw-semibold">
+              {{ student_form.email.label }} <span class="text-danger">*</span>
+            </label>
+            {{ student_form.email }}
+            <div class="form-text text-muted small">Official university email ID (e.g., <code>name.229301234@muj.manipal.edu</code>).</div>
+            {% if student_form.email.errors %}<div class="text-danger small mt-1">{{ student_form.email.errors.0 }}</div>{% endif %}
+          </div>
+
+          <div class="form-section-title mt-4">
+            <i class="bi bi-journal-bookmark-fill me-1"></i> Academic Profile
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label for="{{ student_form.branch.id_for_label }}" class="form-label fw-semibold">
+                {{ student_form.branch.label }} <span class="text-danger">*</span>
+              </label>
+              {{ student_form.branch }}
+              {% if student_form.branch.errors %}<div class="text-danger small mt-1">{{ student_form.branch.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label for="{{ student_form.course.id_for_label }}" class="form-label fw-semibold">
+                {{ student_form.course.label }} <span class="text-danger">*</span>
+              </label>
+              {{ student_form.course }}
+              {% if student_form.course.errors %}<div class="text-danger small mt-1">{{ student_form.course.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label for="{{ student_form.academic_year.id_for_label }}" class="form-label fw-semibold">
+                {{ student_form.academic_year.label }} <span class="text-danger">*</span>
+              </label>
+              {{ student_form.academic_year }}
+              {% if student_form.academic_year.errors %}<div class="text-danger small mt-1">{{ student_form.academic_year.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label for="{{ student_form.semester.id_for_label }}" class="form-label fw-semibold">
+                {{ student_form.semester.label }} (Optional)
+              </label>
+              {{ student_form.semester }}
+              {% if student_form.semester.errors %}<div class="text-danger small mt-1">{{ student_form.semester.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="form-section-title mt-4">
+            <i class="bi bi-shield-lock-fill me-1"></i> Account Security
           </div>
 
           <div class="row g-3 mb-4">
             <div class="col-md-6">
-              <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
-              {{ form.password }}
-              <div class="form-text text-dim">Min. 8 characters.</div>
-              {% if form.password.errors %}<div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>{% endif %}
+              <label for="{{ student_form.password.id_for_label }}" class="form-label fw-semibold">
+                {{ student_form.password.label }} <span class="text-danger">*</span>
+              </label>
+              {{ student_form.password }}
+              <div class="form-text text-muted small">At least 8 characters with letters & numbers.</div>
+              {% if student_form.password.errors %}<div class="text-danger small mt-1">{{ student_form.password.errors.0 }}</div>{% endif %}
             </div>
             <div class="col-md-6">
-              <label for="{{ form.confirm_password.id_for_label }}" class="form-label">Confirm Password</label>
-              {{ form.confirm_password }}
-              {% if form.confirm_password.errors %}<div class="text-danger small mt-1">{{ form.confirm_password.errors.0 }}</div>{% endif %}
+              <label for="{{ student_form.confirm_password.id_for_label }}" class="form-label fw-semibold">
+                {{ student_form.confirm_password.label }} <span class="text-danger">*</span>
+              </label>
+              {{ student_form.confirm_password }}
+              {% if student_form.confirm_password.errors %}<div class="text-danger small mt-1">{{ student_form.confirm_password.errors.0 }}</div>{% endif %}
             </div>
           </div>
 
           <div class="d-grid mb-3">
-            <button type="submit" class="btn btn-mv-primary btn-lg">
-              <i class="bi bi-person-check-fill me-2"></i> Create Student Account
+            <button type="submit" id="studentSubmitBtn" class="btn btn-mv-primary btn-lg fw-semibold">
+              <span class="spinner-border spinner-border-sm me-2 d-none" id="studentSpinner" role="status"></span>
+              <span id="studentBtnText"><i class="bi bi-person-check-fill me-2"></i> Register as Student</span>
             </button>
           </div>
+        </form>
 
-          <div class="text-center small text-muted">
-            Already have an account? <a href="{% url 'accounts:login' %}" class="fw-semibold">Log in here</a>
+        <!-- ========================================== -->
+        <!-- Form B: Club Organizer Registration Form   -->
+        <!-- ========================================== -->
+        <form id="organizerRegistrationForm" method="post" action="{% url 'accounts:register' %}" class="{% if selected_role != 'organizer' %}d-none{% endif %}" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="registration_role" value="organizer">
+
+          <div class="alert alert-warning py-2 px-3 small mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            <strong>Notice for Club Representatives:</strong> Organizer accounts require administrative review and verification before event creation privileges become active.
+          </div>
+
+          <div class="form-section-title">
+            <i class="bi bi-person-lines-fill me-1"></i> Personal & University Identification
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label for="{{ organizer_form.full_name.id_for_label }}" class="form-label fw-semibold">
+                {{ organizer_form.full_name.label }} <span class="text-danger">*</span>
+              </label>
+              {{ organizer_form.full_name }}
+              {% if organizer_form.full_name.errors %}<div class="text-danger small mt-1">{{ organizer_form.full_name.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label for="{{ organizer_form.student_identifier.id_for_label }}" class="form-label fw-semibold">
+                {{ organizer_form.student_identifier.label }} <span class="text-danger">*</span>
+              </label>
+              {{ organizer_form.student_identifier }}
+              <div class="form-text text-muted small">Your unique MUJ registration number.</div>
+              {% if organizer_form.student_identifier.errors %}<div class="text-danger small mt-1">{{ organizer_form.student_identifier.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="{{ organizer_form.email.id_for_label }}" class="form-label fw-semibold">
+              {{ organizer_form.email.label }} <span class="text-danger">*</span>
+            </label>
+            {{ organizer_form.email }}
+            <div class="form-text text-muted small">Official university email ID.</div>
+            {% if organizer_form.email.errors %}<div class="text-danger small mt-1">{{ organizer_form.email.errors.0 }}</div>{% endif %}
+          </div>
+
+          <div class="form-section-title mt-4">
+            <i class="bi bi-journal-bookmark-fill me-1"></i> Academic Profile
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label for="{{ organizer_form.branch.id_for_label }}" class="form-label fw-semibold">
+                {{ organizer_form.branch.label }} <span class="text-danger">*</span>
+              </label>
+              {{ organizer_form.branch }}
+              {% if organizer_form.branch.errors %}<div class="text-danger small mt-1">{{ organizer_form.branch.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label for="{{ organizer_form.course.id_for_label }}" class="form-label fw-semibold">
+                {{ organizer_form.course.label }} <span class="text-danger">*</span>
+              </label>
+              {{ organizer_form.course }}
+              {% if organizer_form.course.errors %}<div class="text-danger small mt-1">{{ organizer_form.course.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label for="{{ organizer_form.academic_year.id_for_label }}" class="form-label fw-semibold">
+                {{ organizer_form.academic_year.label }} <span class="text-danger">*</span>
+              </label>
+              {{ organizer_form.academic_year }}
+              {% if organizer_form.academic_year.errors %}<div class="text-danger small mt-1">{{ organizer_form.academic_year.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="form-section-title mt-4">
+            <i class="bi bi-people-fill me-1"></i> Club Affiliation & Leadership Role
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label for="{{ organizer_form.club_choice.id_for_label }}" class="form-label fw-semibold">
+                {{ organizer_form.club_choice.label }} <span class="text-danger">*</span>
+              </label>
+              {{ organizer_form.club_choice }}
+              {% if organizer_form.club_choice.errors %}<div class="text-danger small mt-1">{{ organizer_form.club_choice.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6" id="newClubFieldWrapper" style="display: none;">
+              <label for="{{ organizer_form.new_club_name.id_for_label }}" class="form-label fw-semibold">
+                {{ organizer_form.new_club_name.label }} <span class="text-danger">*</span>
+              </label>
+              {{ organizer_form.new_club_name }}
+              {% if organizer_form.new_club_name.errors %}<div class="text-danger small mt-1">{{ organizer_form.new_club_name.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label for="{{ organizer_form.position.id_for_label }}" class="form-label fw-semibold">
+                {{ organizer_form.position.label }} <span class="text-danger">*</span>
+              </label>
+              {{ organizer_form.position }}
+              {% if organizer_form.position.errors %}<div class="text-danger small mt-1">{{ organizer_form.position.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6" id="positionDetailWrapper" style="display: none;">
+              <label for="{{ organizer_form.position_detail.id_for_label }}" class="form-label fw-semibold">
+                {{ organizer_form.position_detail.label }}
+              </label>
+              {{ organizer_form.position_detail }}
+              {% if organizer_form.position_detail.errors %}<div class="text-danger small mt-1">{{ organizer_form.position_detail.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="form-section-title mt-4">
+            <i class="bi bi-shield-lock-fill me-1"></i> Account Security
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label for="{{ organizer_form.password.id_for_label }}" class="form-label fw-semibold">
+                {{ organizer_form.password.label }} <span class="text-danger">*</span>
+              </label>
+              {{ organizer_form.password }}
+              <div class="form-text text-muted small">At least 8 characters with letters & numbers.</div>
+              {% if organizer_form.password.errors %}<div class="text-danger small mt-1">{{ organizer_form.password.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label for="{{ organizer_form.confirm_password.id_for_label }}" class="form-label fw-semibold">
+                {{ organizer_form.confirm_password.label }} <span class="text-danger">*</span>
+              </label>
+              {{ organizer_form.confirm_password }}
+              {% if organizer_form.confirm_password.errors %}<div class="text-danger small mt-1">{{ organizer_form.confirm_password.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="d-grid mb-3">
+            <button type="submit" id="organizerSubmitBtn" class="btn btn-mv-primary btn-lg fw-semibold">
+              <span class="spinner-border spinner-border-sm me-2 d-none" id="organizerSpinner" role="status"></span>
+              <span id="organizerBtnText"><i class="bi bi-send-check-fill me-2"></i> Submit Organizer Registration</span>
+            </button>
           </div>
         </form>
+
+        <div class="text-center small text-muted pt-3 border-top">
+          Already have an account? 
+          <a href="{% url 'accounts:login' %}" class="fw-bold text-decoration-none" style="color: #ea6f32;">
+            Sign In here &rarr;
+          </a>
+        </div>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+  // Dynamic Role Switching
+  function switchRole(role) {
+    const studentCard = document.getElementById('studentRoleCard');
+    const organizerCard = document.getElementById('organizerRoleCard');
+    const studentForm = document.getElementById('studentRegistrationForm');
+    const organizerForm = document.getElementById('organizerRegistrationForm');
+
+    if (role === 'organizer') {
+      organizerCard.classList.add('active');
+      studentCard.classList.remove('active');
+      organizerForm.classList.remove('d-none');
+      studentForm.classList.add('d-none');
+      history.replaceState(null, '', '?role=organizer');
+    } else {
+      studentCard.classList.add('active');
+      organizerCard.classList.remove('active');
+      studentForm.classList.remove('d-none');
+      organizerForm.classList.add('d-none');
+      history.replaceState(null, '', '?role=student');
+    }
+  }
+
+  // Handle New Club field toggling
+  const clubChoice = document.getElementById('id_club_choice');
+  const newClubWrapper = document.getElementById('newClubFieldWrapper');
+  if (clubChoice && newClubWrapper) {
+    function toggleNewClub() {
+      if (clubChoice.value === 'NEW') {
+        newClubWrapper.style.display = 'block';
+        document.getElementById('id_new_club_name').required = true;
+      } else {
+        newClubWrapper.style.display = 'none';
+        document.getElementById('id_new_club_name').required = false;
+      }
+    }
+    clubChoice.addEventListener('change', toggleNewClub);
+    toggleNewClub(); // init on page load
+  }
+
+  // Handle Position Other field toggling
+  const posSelect = document.getElementById('id_position');
+  const posDetailWrapper = document.getElementById('positionDetailWrapper');
+  if (posSelect && posDetailWrapper) {
+    function togglePositionDetail() {
+      if (posSelect.value === 'other') {
+        posDetailWrapper.style.display = 'block';
+      } else {
+        posDetailWrapper.style.display = 'none';
+      }
+    }
+    posSelect.addEventListener('change', togglePositionDetail);
+    togglePositionDetail();
+  }
+
+  // Form submit loading states & preventing duplicate submission
+  document.getElementById('studentRegistrationForm').addEventListener('submit', function() {
+    const btn = document.getElementById('studentSubmitBtn');
+    const spinner = document.getElementById('studentSpinner');
+    const btnText = document.getElementById('studentBtnText');
+    btn.disabled = true;
+    spinner.classList.remove('d-none');
+    btnText.textContent = ' Creating Account...';
+  });
+
+  document.getElementById('organizerRegistrationForm').addEventListener('submit', function() {
+    const btn = document.getElementById('organizerSubmitBtn');
+    const spinner = document.getElementById('organizerSpinner');
+    const btnText = document.getElementById('organizerBtnText');
+    btn.disabled = true;
+    spinner.classList.remove('d-none');
+    btnText.textContent = ' Submitting Registration...';
+  });
+</script>
 {% endblock %}

@@ -14,7 +14,9 @@ MUJVERSE_DIR = BASE_DIR / "mujverse"
 # ─── Security ─────────────────────────────────────────────
 SECRET_KEY = config("DJANGO_SECRET_KEY", default="django-insecure-change-me-in-production")
 DEBUG = config("DJANGO_DEBUG", default=True, cast=bool)
-ALLOWED_HOSTS = config("DJANGO_ALLOWED_HOSTS", default="localhost,127.0.0.1", cast=Csv())
+ALLOWED_HOSTS = config("DJANGO_ALLOWED_HOSTS", default="localhost,127.0.0.1,testserver", cast=Csv())
+if "testserver" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append("testserver")
 
 # ─── Installed Applications ────────────────────────────────
 INSTALLED_APPS = [

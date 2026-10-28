@@ -12,6 +12,7 @@ urlpatterns = [
     path("login/", views.login_view, name="login"),
     path("logout/", views.logout_view, name="logout"),
     path("profile/", views.profile_view, name="profile"),
+    path("pending-approval/", views.pending_approval_view, name="pending_approval"),
     path("dashboard-redirect/", views.dashboard_redirect_view, name="dashboard_redirect"),
     path("demo-organizer/", views.demo_login_organizer_view, name="demo_login_organizer"),
     path("demo-student/", views.demo_login_student_view, name="demo_login_student"),

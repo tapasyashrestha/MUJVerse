@@ -9,6 +9,7 @@ from mujverse.apps.reviews import views as review_views
 app_name = "organizer"
 
 urlpatterns = [
+    path("", views.organizer_dashboard_view, name="index"),
     path("dashboard/", views.organizer_dashboard_view, name="dashboard"),
     path("events/create/", views.event_create_view, name="event_create"),
     path("events/<int:pk>/edit/", views.event_edit_view, name="event_edit"),

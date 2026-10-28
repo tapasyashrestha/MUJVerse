@@ -622,6 +622,47 @@ def toggle_user_status_view(request, user_id):
 
 
 @admin_required
+@require_POST
+def approve_organizer_user_view(request, user_id):
+    """
+    Administrator action to verify and approve a pending Club Organizer account.
+    Activates organizer privileges and approves associated club memberships.
+    """
+    from django.contrib.auth.models import User
+    from mujverse.apps.accounts.models import Profile, AccountStatus, RoleChoices, ClubMembership, ApprovalStatus
+
+    target_user = get_object_or_404(User, id=user_id)
+    profile = getattr(target_user, "profile", None)
+
+    if not profile or profile.role != RoleChoices.ORGANIZER:
+        messages.error(request, "Target user is not registered as an organizer.")
+        return redirect("platform_admin:users")
+
+    profile.status = AccountStatus.ACTIVE
+    profile.save(update_fields=["status", "updated_at"])
+
+    # Approve pending club membership and club if needed
+    for m in ClubMembership.objects.filter(user=target_user):
+        m.approval_status = ApprovalStatus.APPROVED
+        m.reviewed_by = request.user
+        m.save()
+        if m.club.verification_status == ApprovalStatus.PENDING:
+            m.club.verification_status = ApprovalStatus.APPROVED
+            m.club.save(update_fields=["verification_status", "updated_at"])
+
+    AuditLog.log(
+        actor=request.user,
+        action="organizer_approved",
+        object_type="User",
+        object_id=target_user.id,
+        metadata={"username": target_user.username, "organizer": profile.display_name},
+    )
+
+    messages.success(request, f"Organizer '{target_user.username}' ({profile.display_name}) has been approved!")
+    return redirect("platform_admin:users")
+
+
+@admin_required
 def categories_admin_view(request):
     """Category management view with event counts and active toggle."""
     categories = Category.objects.all().order_by("name")

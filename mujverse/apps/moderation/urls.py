@@ -14,6 +14,7 @@ urlpatterns = [
     path("events/<int:pk>/reject/", views.reject_event_view, name="reject_event"),
     path("users/", views.users_list_view, name="users"),
     path("users/<int:user_id>/toggle-status/", views.toggle_user_status_view, name="toggle_user_status"),
+    path("users/<int:user_id>/approve-organizer/", views.approve_organizer_user_view, name="approve_organizer"),
     path("categories/", views.categories_admin_view, name="categories"),
     path("categories/create/", views.category_create_view, name="category_create"),
     path("categories/<int:category_id>/toggle-active/", views.category_toggle_active_view, name="category_toggle_active"),

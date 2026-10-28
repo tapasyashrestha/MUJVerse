@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Account Verification Pending — MUJVERSE{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7 col-md-9 text-center">
+      <div class="mv-card p-4 p-md-5">
+        <div class="d-inline-flex p-3 rounded-circle mb-3" style="background: rgba(245, 158, 11, 0.15); border: 1.5px solid rgba(245, 158, 11, 0.4);">
+          <i class="bi bi-clock-history fs-1 text-warning"></i>
+        </div>
+
+        <h2 class="h3 fw-bold mb-2">Organizer Account Pending Approval</h2>
+        <p class="text-muted mb-4">
+          Hello <strong>{{ profile.display_name|default:user.username }}</strong>, your Club Organizer registration has been received and is currently awaiting administrator verification.
+        </p>
+
+        <div class="p-3 rounded text-start mb-4" style="background: var(--mv-bg-tertiary); border: 1px solid var(--mv-border);">
+          <h6 class="fw-bold mb-3 text-warning"><i class="bi bi-shield-lock me-1"></i> Submitted Registration Details</h6>
+          <div class="row g-2 small">
+            <div class="col-sm-6">
+              <span class="text-muted">Registration Number:</span>
+              <div class="fw-semibold text-white font-monospace">{{ profile.student_identifier|default:"—" }}</div>
+            </div>
+            <div class="col-sm-6">
+              <span class="text-muted">University Email:</span>
+              <div class="fw-semibold text-white">{{ user.email }}</div>
+            </div>
+            <div class="col-sm-6">
+              <span class="text-muted">Department / Branch:</span>
+              <div class="fw-semibold text-white">{{ profile.branch|default:profile.department|default:"—" }}</div>
+            </div>
+            <div class="col-sm-6">
+              <span class="text-muted">Academic Year:</span>
+              <div class="fw-semibold text-white">{{ profile.academic_year|default:"—" }}</div>
+            </div>
+            {% if membership %}
+            <div class="col-sm-6">
+              <span class="text-muted">Club Name:</span>
+              <div class="fw-semibold text-info">{{ membership.club.name }}</div>
+            </div>
+            <div class="col-sm-6">
+              <span class="text-muted">Position / Role:</span>
+              <div class="fw-semibold text-info">
+                {{ membership.get_position_display }}
+                {% if membership.position_detail %}({{ membership.position_detail }}){% endif %}
+              </div>
+            </div>
+            <div class="col-12 mt-2">
+              <span class="text-muted">Status:</span>
+              <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i> {{ membership.get_approval_status_display }}</span>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="alert alert-secondary text-start small mb-4" role="alert">
+          <i class="bi bi-info-circle-fill me-1 text-info"></i>
+          <strong>Why is approval required?</strong> To protect students and campus integrity, event creation, registration management, and attendee check-ins are restricted to verified club representatives authorized by university administration.
+        </div>
+
+        <div class="d-flex justify-content-center gap-3">
+          <a href="{% url 'public:home' %}" class="btn btn-mv-outline">
+            <i class="bi bi-house me-1"></i> Back to Homepage
+          </a>
+          <a href="{% url 'public:explore' %}" class="btn btn-mv-primary">
+            <i class="bi bi-calendar-event me-1"></i> Browse Campus Events
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

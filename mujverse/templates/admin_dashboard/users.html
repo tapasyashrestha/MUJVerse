@@ -63,6 +63,9 @@
                   <span class="badge badge-role-admin">Admin</span>
                 {% elif u.profile.role == 'organizer' %}
                   <span class="badge badge-role-organizer">Organizer</span>
+                  {% if u.profile.status == 'pending' %}
+                    <span class="badge bg-warning text-dark ms-1">Pending Review</span>
+                  {% endif %}
                 {% else %}
                   <span class="badge badge-role-student">Student</span>
                 {% endif %}
@@ -71,7 +74,9 @@
                 {{ u.profile.student_identifier|default:"—" }}
               </td>
               <td>
-                {% if u.is_active %}
+                {% if u.profile.role == 'organizer' and u.profile.status == 'pending' %}
+                  <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i> Awaiting Approval</span>
+                {% elif u.is_active %}
                   <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Active</span>
                 {% else %}
                   <span class="badge bg-danger"><i class="bi bi-slash-circle me-1"></i> Suspended</span>
@@ -84,6 +89,15 @@
                 {% elif u.is_superuser and not request.user.is_superuser %}
                   <span class="badge bg-secondary">Superuser</span>
                 {% else %}
+                  {% if u.profile.role == 'organizer' and u.profile.status == 'pending' %}
+                    <form method="post" action="{% url 'platform_admin:approve_organizer' user_id=u.id %}" class="d-inline me-1"
+                          onsubmit="return confirm('Approve organizer privileges for {{ u.username }}?');">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-success" title="Approve Organizer Account">
+                        <i class="bi bi-check-lg me-1"></i> Approve Organizer
+                      </button>
+                    </form>
+                  {% endif %}
                   <form method="post" action="{% url 'platform_admin:toggle_user_status' user_id=u.id %}" class="d-inline"
                         onsubmit="return confirm('Are you sure you want to {% if u.is_active %}suspend{% else %}reactivate{% endif %} user {{ u.username }}?');">
                     {% csrf_token %}

@@ -148,6 +148,46 @@
       box-shadow: 0 4px 14px rgba(225, 102, 41, 0.4) !important;
       transform: translateY(-1px);
     }
+    .btn-nav-signin {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.45rem 1.15rem !important;
+      border-radius: 9999px !important;
+      border: 1.5px solid #d45b1e !important;
+      color: #d45b1e !important;
+      background: transparent !important;
+      font-weight: 600 !important;
+      font-size: 0.88rem !important;
+      text-decoration: none !important;
+      transition: all 0.2s;
+    }
+    .btn-nav-signin:hover {
+      background: #faece1 !important;
+      color: #bf490e !important;
+      transform: translateY(-1px);
+    }
+    .btn-nav-register {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.48rem 1.35rem !important;
+      border-radius: 9999px !important;
+      background: linear-gradient(135deg, #f07e43 0%, #e16629 100%) !important;
+      color: #ffffff !important;
+      font-weight: 600 !important;
+      font-size: 0.88rem !important;
+      border: none !important;
+      box-shadow: 0 3px 10px rgba(225, 102, 41, 0.28) !important;
+      text-decoration: none !important;
+      transition: all 0.2s;
+    }
+    .btn-nav-register:hover {
+      background: linear-gradient(135deg, #f38a52 0%, #d8591c 100%) !important;
+      box-shadow: 0 4px 14px rgba(225, 102, 41, 0.4) !important;
+      color: #ffffff !important;
+      transform: translateY(-1px);
+    }
     .mv-user-dropdown-menu {
       background: #fffdf9 !important;
       border: 1.5px solid #ecd8c5 !important;
@@ -198,12 +238,6 @@
             {% endif %}
           </a>
 
-          <!-- Organizer Portal Button -->
-          <a href="{% if user.is_authenticated and user.profile.is_organizer %}{% url 'organizer:dashboard' %}{% elif user.is_authenticated %}{% url 'accounts:dashboard_redirect' %}{% else %}{% url 'accounts:demo_login_organizer' %}{% endif %}" class="btn-nav-organizer" title="Access Campus Organizer Portal">
-            <i class="bi bi-emoji-smile"></i>
-            <span>Organizer Portal</span>
-          </a>
-
           <!-- User Pill / Demo Organizer Dropdown -->
           {% if user.is_authenticated %}
             <div class="dropdown">
@@ -233,32 +267,38 @@
               </ul>
             </div>
           {% else %}
-            <!-- Demo Organizer Dropdown for Visitors -->
+            <!-- Clearly Visible Sign In & Create Account Navigation -->
+            <a href="{% url 'accounts:login' %}" class="btn-nav-signin" title="Sign in to your MUJ account">
+              <i class="bi bi-box-arrow-in-right"></i>
+              <span>Sign In</span>
+            </a>
+            <a href="{% url 'accounts:register' %}" class="btn-nav-register" title="Create a student or club organizer account">
+              <i class="bi bi-person-plus-fill"></i>
+              <span>Create Account</span>
+            </a>
+
+            <!-- Quick Demo Access Dropdown for Reviewers/Evaluation -->
             <div class="dropdown">
-              <button class="btn-nav-user-pill dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-person-fill"></i>
-                <span>Demo Organizer</span>
+              <button class="btn btn-sm btn-outline-secondary rounded-circle p-2" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Demo Accounts">
+                <i class="bi bi-three-dots-vertical"></i>
               </button>
-              <ul class="dropdown-menu dropdown-menu-end shadow-lg mv-user-dropdown-menu">
+              <ul class="dropdown-menu dropdown-menu-end shadow mv-user-dropdown-menu">
                 <li>
                   <div class="px-3 py-2 border-bottom">
-                    <div class="fw-bold text-dark">Campus Demo Access</div>
-                    <div class="small text-muted">Test organizer & student workflows</div>
+                    <div class="fw-bold text-dark">Quick Test Access</div>
+                    <div class="small text-muted">Pre-seeded demo accounts</div>
                   </div>
                 </li>
                 <li>
                   <a class="dropdown-item py-2 fw-semibold text-primary" href="{% url 'accounts:demo_login_organizer' %}">
-                    <i class="bi bi-lightning-charge-fill text-warning me-2"></i> Quick Login: Demo Organizer
+                    <i class="bi bi-lightning-charge-fill text-warning me-2"></i> Demo Organizer
                   </a>
                 </li>
                 <li>
                   <a class="dropdown-item py-2" href="{% url 'accounts:demo_login_student' %}">
-                    <i class="bi bi-mortarboard me-2"></i> Quick Login: Demo Student
+                    <i class="bi bi-mortarboard me-2"></i> Demo Student
                   </a>
                 </li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item py-2" href="{% url 'accounts:login' %}"><i class="bi bi-box-arrow-in-right me-2"></i> Log In</a></li>
-                <li><a class="dropdown-item py-2" href="{% url 'accounts:register' %}"><i class="bi bi-person-plus me-2"></i> Register New Student</a></li>
               </ul>
             </div>
           {% endif %}

@@ -1,6 +1,6 @@
 """
 Server-side authorization decorators for MUJVERSE.
-Guarantees that access is validated on the backend.
+Guarantees that access is strictly validated on the backend.
 """
 
 from functools import wraps
@@ -8,13 +8,14 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect
 from django.contrib import messages
-from .models import RoleChoices
+from .models import RoleChoices, AccountStatus
 
 
 def role_required(*allowed_roles):
     """
     Decorator to restrict access to users having one of the specified roles.
     Superusers and staff always bypass.
+    Organizers must have ACTIVE status (verified by administrators).
     """
     def decorator(view_func):
         @wraps(view_func)
@@ -26,6 +27,15 @@ def role_required(*allowed_roles):
 
             profile = getattr(user, "profile", None)
             if profile and profile.role in allowed_roles:
+                # If organizer role is required, ensure account is approved & active
+                if RoleChoices.ORGANIZER in allowed_roles and profile.role == RoleChoices.ORGANIZER:
+                    if profile.status != AccountStatus.ACTIVE:
+                        messages.warning(
+                            request,
+                            "Your Club Organizer account is currently pending administrative verification. "
+                            "You will be granted organizer dashboard and event creation privileges once approved.",
+                        )
+                        return redirect("accounts:pending_approval")
                 return view_func(request, *args, **kwargs)
 
             messages.error(
